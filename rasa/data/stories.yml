@@ -15,3 +15,11 @@ stories:
       entities:
         - term
     - action: action_explain_terms
+
+- story: compare terms
+  steps:
+    - intent: ask_for_explanation
+      entities:
+        - comparison_term1
+        - comparison_term2
+    - action: action_compare_terms

@@ -97,3 +97,10 @@ nlu:
     - Can you explain what [ethernet](term) is?
     - Define [NAT](term) for me
     - Can you tell me what [WiFi](term) is?
+
+- intent: ask_for_comparison
+  examples: |
+    - What is the difference between [broadband](comparison_term1) and [bandwidth](comparison_term2)?
+    - Compare [ethernet](comparison_term1) and [WiFi](comparison_term2)
+    - What are the differences between [NAT](comparison_term1) and [firewall](comparison_term2)?
+    - Can you compare [WiFi](comparison_term1) and [ethernet](comparison_term2)?

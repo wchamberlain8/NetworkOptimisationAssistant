@@ -8,6 +8,8 @@ intents:
   - mood_great
   - mood_unhappy
   - bot_challenge
+  - ask_for_explanation
+  - ask_for_comparison
 
 responses:
   utter_greet:
@@ -31,9 +33,12 @@ responses:
 
 actions:
   - action_explain_terms
+  - action_compare_terms
 
 entities:
  - term
+ - comparison_term1
+ - comparison_term2
 
 slots:
   term:
@@ -41,6 +46,18 @@ slots:
     mappings:
       - type: from_entity
         entity: term
+
+  comparison_term1:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: comparison_term1
+  
+  comparison_term2:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: comparison_term2
 
 
 session_config:
