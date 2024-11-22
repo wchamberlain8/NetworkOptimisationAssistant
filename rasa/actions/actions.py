@@ -4,24 +4,61 @@
 # See this guide on how to implement these action:
 # https://rasa.com/docs/rasa/custom-actions
 
+from typing import Any, Text, Dict, List
 
-# This is a simple example for a custom action which utters "Hello World!"
+from rasa_sdk import Action, Tracker
+from rasa_sdk.executor import CollectingDispatcher
+from dictionary import TERM_DICTIONARY, COMPARISON_DICTIONARY
 
-# from typing import Any, Text, Dict, List
-#
-# from rasa_sdk import Action, Tracker
-# from rasa_sdk.executor import CollectingDispatcher
-#
-#
-# class ActionHelloWorld(Action):
-#
-#     def name(self) -> Text:
-#         return "action_hello_world"
-#
-#     def run(self, dispatcher: CollectingDispatcher,
-#             tracker: Tracker,
-#             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-#
-#         dispatcher.utter_message(text="Hello World!")
-#
-#         return []
+class ActionHelloWorld(Action):
+
+    def name(self) -> Text:
+        return "action_hello_world"
+
+    def run(self, dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        dispatcher.utter_message(text="Hello World!")
+
+        return []
+    
+
+class ActionExplainTerms(Action):
+    
+    def name(self) -> Text:
+        return "action_explain_terms"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        term = tracker.get_slot("term")
+
+        if term:
+            explanation = TERM_DICTIONARY.get(term.lower(), "Sorry, I don't know what that is.")
+            dispatcher.utter_message(text=explanation)
+        else:
+            dispatcher.utter_message(text="Please provide a networking term you would like explaining.")
+
+        return []
+    
+
+
+    
+class ActionCompareTerms(Action):
+    
+    def name(self) -> Text:
+        return "action_compare_terms"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        term1 = tracker.get_slot("term1")
+        term2 = tracker.get_slot("term2")
+
+        if term1 and term2:
+            key = "".join(sorted([term1.lower(), term2.lower()]))
+            explanation = COMPARISON_DICTIONARY.get(key, "Sorry, I can't compare those two terms.")
+            dispatcher.utter_message(text=explanation)
+        else:
+            dispatcher.utter_message(text="Please provide two networking terms you would like to be compared.")
+
+        return []
