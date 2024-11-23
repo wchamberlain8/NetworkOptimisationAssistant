@@ -2,4 +2,4 @@
 models/
 
 # Ignore cache
-.cache/
+.rasa/cache/
