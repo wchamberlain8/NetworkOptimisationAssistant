@@ -23,3 +23,9 @@ stories:
         - comparison_term1
         - comparison_term2
     - action: action_compare_terms
+
+
+- story: connect to api
+  steps:
+    - intent: connect_to_api
+    - action: action_connect_to_api

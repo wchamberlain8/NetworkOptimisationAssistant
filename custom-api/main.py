@@ -12,4 +12,5 @@ class InputModel(BaseModel):
 @app.post("/test")
 async def test(input: InputModel):
     if input.input_value == "test":
-        return {"hello world"}
+        return {"message": "Hello World! - You have connected to the API!"}
+    return {"message": "Invalid input provided."}

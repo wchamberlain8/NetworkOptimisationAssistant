@@ -104,3 +104,11 @@ nlu:
     - Compare [ethernet](comparison_term1) and [WiFi](comparison_term2)
     - What are the differences between [NAT](comparison_term1) and [firewall](comparison_term2)?
     - Can you compare [WiFi](comparison_term1) and [ethernet](comparison_term2)?
+
+- intent: connect_to_api
+  examples: |
+    - Connect to the API
+    - Can you connect to the API?
+    - I want to connect to the API
+    - Please link with the API
+

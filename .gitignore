@@ -1,0 +1,5 @@
+# Ignore Rasa models
+models/
+
+# Ignore cache
+.cache/

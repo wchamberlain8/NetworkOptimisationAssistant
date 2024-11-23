@@ -4,6 +4,8 @@
 # See this guide on how to implement these action:
 # https://rasa.com/docs/rasa/custom-actions
 
+import requests
+
 from typing import Any, Text, Dict, List
 
 from rasa_sdk import Action, Tracker
@@ -74,5 +76,32 @@ class ActionCompareTerms(Action):
             dispatcher.utter_message(text=explanation)
         else:
             dispatcher.utter_message(text="Please provide two networking terms you would like to be compared.")
+
+        return []
+    
+
+class ActionConnectToAPI(Action):
+
+    def name (self) -> Text:
+        return "action_connect_to_api"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+       
+        url = "http://127.0.0.1:8000/test"
+        input_value = "test"
+
+        try:
+            response = requests.post(url, json={"input_value": input_value})
+            
+            if response.status_code == 200:
+                response_data = response.json() 
+                message = response_data.get("message", "API responded without a message.")
+            else:
+                message = f"Error: Received {response.status_code} from the API."
+
+        except Exception as e:
+            message = f"API call failed: {str(e)}"
+
+        dispatcher.utter_message(text=message)
 
         return []
