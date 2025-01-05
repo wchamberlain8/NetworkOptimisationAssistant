@@ -20,6 +20,7 @@ from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER, set_ev_cl
 from ryu.ofproto import ofproto_v1_3
 from ryu.lib.packet import *
 from ryu.lib.dpid import dpid_to_str
+import threading
 
 
 class Controller(RyuApp):
@@ -31,6 +32,9 @@ class Controller(RyuApp):
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
 
+
+
+
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def features_handler(self, ev):
         '''
@@ -40,12 +44,19 @@ class Controller(RyuApp):
         the controller. This acts as a rule for flow-table misses.
         '''
         datapath = ev.msg.datapath
+        self.logger.info(f"Connected to switch {datapath.id}")
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
         match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
         self.logger.info("Handshake taken place with {}".format(dpid_to_str(datapath.id)))
         self.__add_flow(datapath, 0, match, actions)
+        self.logger.info("Lets start collecting stats!")
+        self.request_stats_everysooften(datapath)
+
+
+
+
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def packet_in_handler(self, ev):
@@ -103,7 +114,7 @@ class Controller(RyuApp):
             data = msg.data 
         else: None
             
-        out = parser.OFPPacketOut(atapath=datapath, buffer_id=msg.buffer_id, in_port=in_port, actions=actions, data=data)
+        out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id, in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
 
         #make a flow rule in the flow table
@@ -129,5 +140,39 @@ class Controller(RyuApp):
         parser = datapath.ofproto_parser
         inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
         mod = parser.OFPFlowMod(datapath=datapath, priority=priority, match=match, instructions=inst)
-        self.logger.info("Flow-Mod written to {}".format(dpid_to_str(datapath.id)))
+        #self.logger.info("Flow-Mod written to {}".format(dpid_to_str(datapath.id)))
         datapath.send_msg(mod)
+
+
+    def request_stats_everysooften(self, datapath):
+        self.logger.info("About to collect me some stats!")
+        self.request_stats(datapath)
+        threading.Timer(10, self.request_stats_everysooften, args=[datapath]).start()
+
+
+    def request_stats(self, datapath):
+        #Request flow stats from the switch'''
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+        request = parser.OFPFlowStatsRequest(datapath)
+        self.logger.info("Sending a request for stats now...")
+        datapath.send_msg(request)
+
+
+
+    @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
+    def stats_response_handler(self, ev):
+        #Get and calculate the flow stats from the switch (from the event)
+        self.logger.info("Response detected, collating stats...")
+        body = ev.msg.body
+        stats = []
+
+        for stat in body:
+            stats.append({
+                "match": stat.match,
+                "byte_count": stat.byte_count,
+                "packet_count": stat.packet_count,
+                "duration_sec": stat.duration_sec
+            })
+
+        self.logger.info(f"Stats collected! Here they are: {stats}")
