@@ -53,7 +53,7 @@ class Controller(RyuApp):
         self.logger.info("Handshake taken place with {}".format(dpid_to_str(datapath.id)))
         self.__add_flow(datapath, 0, match, actions)
         self.logger.info("Lets start collecting stats!")
-        self.request_stats_everysooften(datapath)
+        self.request_and_send_stats(datapath)
 
 
 
