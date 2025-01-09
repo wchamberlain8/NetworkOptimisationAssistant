@@ -105,3 +105,31 @@ class ActionConnectToAPI(Action):
         dispatcher.utter_message(text=message)
 
         return []
+
+class ActionRetrieveBandwidth(Action):
+
+    def name (self) -> Text:
+        return "action_retrieve_bandwidth"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        url = "http://127.0.0.1:8000/retrieve_bandwidth"
+
+        try:
+            response = requests.get(url)
+
+            if response.status_code == 200:
+                data = response.json()
+                top_consumer = data.get("top_consumer")
+
+                if top_consumer:
+                    message = f"The device using the most bandwidth is {top_consumer['device']} with {top_consumer['bytes']} bytes." #need to change this to  aactually figure out bandwith not just bytes
+                else:
+                    message = "No devices could be found using bandwidth."
+            else:
+                message = "Failed to retrieve bandwidth information."
+        except Exception as e:
+            message = f"API call failed: {str(e)}"
+
+        dispatcher.utter_message(text=message)
+        return []

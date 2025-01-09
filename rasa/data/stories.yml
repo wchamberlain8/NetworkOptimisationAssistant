@@ -29,3 +29,8 @@ stories:
   steps:
     - intent: connect_to_api
     - action: action_connect_to_api
+
+- story: request bandwidth stats
+  steps:
+    - intent: request_bandwidth_stats
+    - action: action_retrieve_bandwidth
