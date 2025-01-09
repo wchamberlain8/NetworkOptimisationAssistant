@@ -21,6 +21,7 @@ from ryu.ofproto import ofproto_v1_3
 from ryu.lib.packet import *
 from ryu.lib.dpid import dpid_to_str
 import threading
+import requests
 
 
 class Controller(RyuApp):
@@ -140,14 +141,23 @@ class Controller(RyuApp):
         parser = datapath.ofproto_parser
         inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
         mod = parser.OFPFlowMod(datapath=datapath, priority=priority, match=match, instructions=inst)
-        #self.logger.info("Flow-Mod written to {}".format(dpid_to_str(datapath.id)))
         datapath.send_msg(mod)
 
 
-    def request_stats_everysooften(self, datapath):
+    def request_and_send_stats(self, datapath):
         self.logger.info("About to collect me some stats!")
-        self.request_stats(datapath)
-        threading.Timer(10, self.request_stats_everysooften, args=[datapath]).start()
+        stats = self.request_stats(datapath)
+
+        payload = {
+            "stats": stats
+        }
+
+        try:
+            response = requests.post("http://127.0.0.1:8000/update_stats", json=payload)
+        except requests.exceptions.RequestException as e:
+            print(f"Error sending data: {e}")
+
+        threading.Timer(10, self.request_and_send_stats, args=[datapath]).start()
 
 
     def request_stats(self, datapath):
@@ -176,3 +186,4 @@ class Controller(RyuApp):
             })
 
         self.logger.info(f"Stats collected! Here they are: {stats}")
+        return stats
