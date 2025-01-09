@@ -4,11 +4,11 @@ SESSION_NAME="test"
 tmux new-session -d -s $SESSION_NAME
 
 # Custom API
-tmux rename-window -t $SESSION_NAME:0 -n "API"
+tmux rename-window -t $SESSION_NAME:0 "API"
 tmux send-keys -t $SESSION_NAME:0 "cd custom-api && uvicorn main:app --reload" C-m
 
 # Mininet
-tmux new-window -t $SESSION_NAME:1 "Network-Controller"
+tmux new-window -t $SESSION_NAME:1 -n "Network-Controller"
 tmux send-keys -t $SESSION_NAME:1 "cd network-controller && sudo mn --switch ovsk --controller remote --custom ./topology.py --topo testTopology" C-m
 
 # Ryu Controller
