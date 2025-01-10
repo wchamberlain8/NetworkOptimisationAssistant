@@ -114,10 +114,10 @@ nlu:
 
 - intent: retrieve_bandwidth
   examples: |
-  - What is using up the most bandwidth?
-  - What device is using the most bandwidth?
-  - What is using up the internet?
-  - What device is using the internet right now?
-  - What is using up the internet speed currently?
-  - Who is using up all the internet?
-  - Who is using so much bandwidth?
+    - What is using up the most bandwidth?
+    - What device is using the most bandwidth?
+    - What is using up the internet?
+    - What device is using the internet right now?
+    - What is using up the internet speed currently?
+    - Who is using up all the internet?
+    - Who is using so much bandwidth?
