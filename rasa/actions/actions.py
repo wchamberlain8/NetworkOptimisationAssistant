@@ -127,7 +127,7 @@ class ActionRetrieveBandwidth(Action):
                 else:
                     message = "No devices could be found using bandwidth."
             else:
-                message = "Failed to retrieve bandwidth information."
+                message = f"Error: Received {response.status_code} from the API."
         except Exception as e:
             message = f"API call failed: {str(e)}"
 

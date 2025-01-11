@@ -31,9 +31,10 @@ async def update_stats(data: dict):
 @app.get("/retrieve_bandwidth")
 async def retrieve_bandwidth():
     global bandwidth_stats
+    top_consumer = None
     if not bandwidth_stats:
         print("ERROR: NO DATA FOUND")
-    
-    top_consumer = max(bandwidth_stats["stats"], key=lambda x: x["bytes"], default=None)
+    else:
+        top_consumer = max(bandwidth_stats["stats"], key=lambda x: x["bytes"], default=None)
     
     return {"top_consumer": top_consumer}
