@@ -4,7 +4,7 @@ from pydantic import BaseModel
 #initialise the FastAPI
 app = FastAPI()
 
-bandwidth_stats = {}
+bandwidth_stats = {"stats": []}
 
 #data model if we want to pass some data to the API
 class InputModel(BaseModel):
@@ -32,9 +32,13 @@ async def update_stats(data: dict):
 async def retrieve_bandwidth():
     global bandwidth_stats
     top_consumer = None
-    if not bandwidth_stats:
+    
+    if not bandwidth_stats or "stats" not in bandwidth_stats or not bandwidth_stats["stats"]:
         print("ERROR: NO DATA FOUND")
     else:
-        top_consumer = max(bandwidth_stats["stats"], key=lambda x: x["bytes"], default=None)
+        try:
+            top_consumer = max(bandwidth_stats["stats"], key=lambda x: x.get("bytes", 0), default=None)
+        except Exception as e:
+            print(f"Error calculating top consumer: {e}")
     
     return {"top_consumer": top_consumer}

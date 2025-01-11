@@ -146,16 +146,7 @@ class Controller(RyuApp):
 
     def request_and_send_stats(self, datapath):
         self.logger.info("About to collect me some stats!")
-        stats = self.request_stats(datapath)
-
-        payload = {
-            "stats": stats
-        }
-
-        try:
-            response = requests.post("http://127.0.0.1:8000/update_stats", json=payload)
-        except requests.exceptions.RequestException as e:
-            print(f"Error sending data: {e}")
+        self.request_stats(datapath)
 
         threading.Timer(10, self.request_and_send_stats, args=[datapath]).start()
 
@@ -185,5 +176,16 @@ class Controller(RyuApp):
                 "duration_sec": stat.duration_sec
             })
 
+
         self.logger.info(f"Stats collected! Here they are: {stats}")
+
+        payload = {
+            "stats": stats
+        }
+
+        try:
+            response = requests.post("http://127.0.0.1:8000/update_stats", json=payload)
+        except requests.exceptions.RequestException as e:
+            print(f"Error sending data: {e}")
+
         return stats

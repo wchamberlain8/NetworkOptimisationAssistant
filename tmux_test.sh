@@ -23,5 +23,5 @@ tmux send-keys -t $SESSION_NAME:0.3 "cd rasa && rasa run actions" C-m
 tmux split-window -h -t $SESSION_NAME:0.3
 tmux send-keys -t $SESSION_NAME:0.4 "cd rasa && rasa shell" C-m
 
-tmux select-pane -t $SESSION_NAME:0.0
+tmux select-pane -t $SESSION_NAME:0.1
 tmux attach-session -t $SESSION_NAME
