@@ -116,16 +116,14 @@ class ActionRetrieveBandwidth(Action):
         url = "http://127.0.0.1:8000/retrieve_bandwidth"
 
         try:
-            print("Attempting to retrieve bandwidth data...")
             response = requests.get(url)
 
             if response.status_code == 200:
-                print("We got status code 200 yay!")
                 data = response.json()
                 top_consumer = data.get("top_consumer")
-                print("Attempting to find top consumer...")
+
                 if top_consumer:
-                    message = f"The device using the most bandwidth is {top_consumer['device']} with {top_consumer['bytes']} bytes." #need to change this to  aactually figure out bandwith not just bytes
+                    message = f"The device using the most bandwidth is {top_consumer['src_mac']} with {top_consumer['byte_count']} bytes." #need to change this to  aactually figure out bandwith not just bytes
                 else:
                     message = "No devices could be found using bandwidth."
             else:

@@ -37,7 +37,7 @@ async def retrieve_bandwidth():
         print("ERROR: NO DATA FOUND")
     else:
         try:
-            top_consumer = max(bandwidth_stats["stats"], key=lambda x: x.get("bytes", 0), default=None)
+            top_consumer = max(bandwidth_stats["stats"], key=lambda x: x.get("byte_count", 0), default=None)
         except Exception as e:
             print(f"Error calculating top consumer: {e}")
     

@@ -170,7 +170,10 @@ class Controller(RyuApp):
 
         for stat in body:
             stats.append({
-                "match": str(stat.match),
+                "src_ip": stat.match.get("ipv4_src", "N/A"),
+                "dst_ip": stat.match.get("ipv4_dst", "N/A"),
+                "src_mac": stat.match.get("eth_src", "N/A"),
+                "dst_mac": stat.match.get("eth_dst", "N/A"),
                 "byte_count": stat.byte_count,
                 "packet_count": stat.packet_count,
                 "duration_sec": stat.duration_sec
