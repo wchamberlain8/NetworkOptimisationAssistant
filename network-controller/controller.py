@@ -170,7 +170,7 @@ class Controller(RyuApp):
 
         for stat in body:
             stats.append({
-                "match": stat.match,
+                "match": str(stat.match),
                 "byte_count": stat.byte_count,
                 "packet_count": stat.packet_count,
                 "duration_sec": stat.duration_sec
