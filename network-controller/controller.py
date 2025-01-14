@@ -80,12 +80,16 @@ class Controller(RyuApp):
             return
         
         src_mac = eth.src
-        self.logger.debug(f"Packet in event received: src_mac={src_mac}")
+        
+        self.logger.info(f"Packet in event received: src_mac={src_mac}")
+        if src_mac is None:
+            print("No src_mac\n")
+            
         dst_mac = eth.dst
         in_port = msg.match['in_port']
         a = False
 
-        self.logger.debug(f"Processing packet in: src_mac={src_mac}, dst_mac={dst_mac}, in_port={in_port}")
+        self.logger.info(f"Processing packet in: src_mac={src_mac}, dst_mac={dst_mac}, in_port={in_port}")
 
         if dst_mac.startswith('33:33'):
             self.logger.info(f"Multicast traffic detected. src={src_mac}, dst={dst_mac}")
