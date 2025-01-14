@@ -97,11 +97,6 @@ class Controller(RyuApp):
             self.logger.info(f"Broadcast packet detected. src={src_mac}, dst={dst_mac}")
             a = True
             
-
-        if src_mac in self.mac_to_port.get(dpid, {}):
-            self.logger.info(f"MAC {src_mac} already learned on port {self.mac_to_port[dpid][src_mac]} for switch {dpid}, skipping learning.")
-            return
-            
         self.mac_to_port.setdefault(dpid, {})
 
         self.mac_to_port[dpid][src_mac] = in_port #store that the device with src_mac reachable through in_port on dpid 
