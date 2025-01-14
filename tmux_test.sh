@@ -3,16 +3,18 @@
 SESSION_NAME="test"
 tmux new-session -d -s $SESSION_NAME
 
+tmux set-option -g default-command "source /home/chambe28/typvenv/bin/activate"
+
 # Background processes - API and Rasa Actions
 tmux rename-window -t $SESSION_NAME:0 "Background"
 tmux send-keys -t $SESSION_NAME:0 "cd rasa && rasa run actions" C-m
-tmux split-window -h -t $SESSION_NAME:0
+tmux split-window -v -t $SESSION_NAME:0
 tmux send-keys -t $SESSION_NAME:0.1 "cd custom-api && uvicorn main:app --reload" C-m
 
 # Network processes - Mininet and Ryu Controller
 tmux new-window -t $SESSION_NAME -n "Network"
 tmux send-keys -t $SESSION_NAME:1 "cd network-controller && sudo mn --switch ovsk --controller remote --custom ./topology.py --topo testTopology" C-m
-tmux split-window -h -t $SESSION_NAME:1
+tmux split-window -v -t $SESSION_NAME:1
 tmux send-keys -t $SESSION_NAME:1.1 "cd network-controller && ryu-manager ./controller.py" C-m
 
 # NOA - Rasa Shell
