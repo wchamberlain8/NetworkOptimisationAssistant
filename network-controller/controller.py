@@ -52,7 +52,6 @@ class Controller(RyuApp):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
         self.logger.info("Handshake taken place with {}".format(dpid_to_str(datapath.id)))
         self.__add_flow(datapath, 0, match, actions)
-        self.logger.info("Lets start collecting stats!")
         self.request_and_send_stats(datapath)
 
 
@@ -84,6 +83,8 @@ class Controller(RyuApp):
         dst_mac = eth.dst
         in_port = msg.match['in_port']
         a = False
+
+        self.logger.debug(f"Processing packet in: src_mac={src_mac}, dst_mac={dst_mac}, in_port={in_port}")
 
         if dst_mac.startswith('33:33'):
             self.logger.info(f"Multicast traffic detected. src={src_mac}, dst={dst_mac}")
@@ -120,7 +121,7 @@ class Controller(RyuApp):
 
         #make a flow rule in the flow table
         if out_port != ofproto.OFPP_FLOOD:
-            match = parser.OFPMatch(in_port=in_port, eth_dst=dst_mac)
+            match = parser.OFPMatch(in_port=in_port, eth_dst=dst_mac, eth_type=0x0800)
             self.__add_flow(datapath, 1, match, actions)
             return
 
@@ -145,15 +146,12 @@ class Controller(RyuApp):
 
 
     def request_and_send_stats(self, datapath):
-        self.logger.info("About to collect me some stats!")
         self.request_stats(datapath)
-
-        threading.Timer(10, self.request_and_send_stats, args=[datapath]).start()
+        threading.Timer(20, self.request_and_send_stats, args=[datapath]).start()
 
 
     def request_stats(self, datapath):
-        #Request flow stats from the switch'''
-        ofproto = datapath.ofproto
+        #Request flow stats from the switch
         parser = datapath.ofproto_parser
         request = parser.OFPFlowStatsRequest(datapath)
         self.logger.info("Sending a request for stats now...")
@@ -164,7 +162,6 @@ class Controller(RyuApp):
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
     def stats_response_handler(self, ev):
         #Get and calculate the flow stats from the switch (from the event)
-        self.logger.info("Response detected, collating stats...")
         body = ev.msg.body
         stats = []
 
@@ -180,11 +177,11 @@ class Controller(RyuApp):
             })
 
 
-        self.logger.info(f"Stats collected! Here they are: {stats}")
-
         payload = {
             "stats": stats
         }
+
+        self.logger.info(f"Payload being sent: {payload}")
 
         try:
             response = requests.post("http://127.0.0.1:8000/update_stats", json=payload)
