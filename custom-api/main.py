@@ -22,10 +22,6 @@ async def test(input: InputModel):
 async def update_stats(data: dict):
     global bandwidth_stats
     bandwidth_stats = data
-    print("IT WORKED!!!")
-    print(bandwidth_stats)
-    #need to figure out how to properly retrieve bandwidth stats
-
 
 #api endpoint for getting the bandwidth information
 @app.get("/retrieve_bandwidth")

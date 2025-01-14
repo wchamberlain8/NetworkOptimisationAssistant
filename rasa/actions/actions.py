@@ -123,7 +123,8 @@ class ActionRetrieveBandwidth(Action):
                 top_consumer = data.get("top_consumer")
 
                 if top_consumer:
-                    message = f"The device using the most bandwidth is {top_consumer['src_mac']} with {top_consumer['byte_count']} bytes." #need to change this to  aactually figure out bandwith not just bytes
+                    bandwidth = (top_consumer.get("byte_count") * 8) / top_consumer.get("duration_sec") / 1000000 
+                    message = f"The top consumer is {top_consumer['src_mac']} using {bandwidth} Mbits/sec." #need to change this to  aactually figure out bandwith not just bytes
                 else:
                     message = "No devices could be found using bandwidth."
             else:
