@@ -4,7 +4,7 @@ from pydantic import BaseModel
 #initialise the FastAPI
 app = FastAPI()
 
-bandwidth_stats = {"stats": []}
+bandwidth_stats = {}
 
 #data model if we want to pass some data to the API
 class InputModel(BaseModel):

@@ -3,25 +3,21 @@
 SESSION_NAME="test"
 tmux new-session -d -s $SESSION_NAME
 
-# Rasa Shell
-tmux rename-window -t $SESSION_NAME:0 "Main"
-tmux send-keys -t $SESSION_NAME:0 "cd rasa && rasa shell" C-m
+# Background processes - API and Rasa Actions
+tmux rename-window -t $SESSION_NAME:0 "Background"
+tmux send-keys -t $SESSION_NAME:0 "cd rasa && rasa run actions" C-m
+tmux split-window -h -t $SESSION_NAME:0
+tmux send-keys -t $SESSION_NAME:0.1 "cd custom-api && uvicorn main:app --reload" C-m
 
-# Mininet
-tmux split-window -v -t $SESSION_NAME:0
-tmux send-keys -t $SESSION_NAME:0.1 "cd network-controller && sudo mn --switch ovsk --controller remote --custom ./topology.py --topo testTopology" C-m
+# Network processes - Mininet and Ryu Controller
+tmux new-window -t $SESSION_NAME -n "Network"
+tmux send-keys -t $SESSION_NAME:1 "cd network-controller && sudo mn --switch ovsk --controller remote --custom ./topology.py --topo testTopology" C-m
+tmux split-window -h -t $SESSION_NAME:1
+tmux send-keys -t $SESSION_NAME:1.1 "cd network-controller && ryu-manager ./controller.py" C-m
 
-# Ryu Controller
-tmux split-window -h -t $SESSION_NAME:0.1
-tmux send-keys -t $SESSION_NAME:0.2 "cd network-controller && ryu-manager ./controller.py" C-m
+# NOA - Rasa Shell
+tmux new-window -t $SESSION_NAME -n "NOA"
+tmux send-keys -t $SESSION_NAME:2 "cd rasa && rasa shell" C-m
 
-# Rasa Actions
-tmux split-window -v -t $SESSION_NAME:0.2
-tmux send-keys -t $SESSION_NAME:0.3 "cd rasa && rasa run actions" C-m
-
-# Custom API
-tmux split-window -h -t $SESSION_NAME:0.3
-tmux send-keys -t $SESSION_NAME:0.4 "cd custom-api && uvicorn main:app --reload" C-m
-
-tmux select-pane -t $SESSION_NAME:0.1
+tmux select-pane -t $SESSION_NAME:1.0
 tmux attach-session -t $SESSION_NAME
