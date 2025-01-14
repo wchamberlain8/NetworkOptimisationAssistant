@@ -82,9 +82,7 @@ class Controller(RyuApp):
         src_mac = eth.src
         
         self.logger.info(f"Packet in event received: src_mac={src_mac}")
-        if src_mac is None:
-            print("No src_mac\n")
-            
+
         dst_mac = eth.dst
         in_port = msg.match['in_port']
         a = False
@@ -100,6 +98,10 @@ class Controller(RyuApp):
             a = True
             
 
+        if src_mac in self.mac_to_port.get(dpid, {}):
+            self.logger.info(f"MAC {src_mac} already learned on port {self.mac_to_port[dpid][src_mac]} for switch {dpid}, skipping learning.")
+            return
+            
         self.mac_to_port.setdefault(dpid, {})
 
         self.mac_to_port[dpid][src_mac] = in_port #store that the device with src_mac reachable through in_port on dpid 
@@ -126,7 +128,7 @@ class Controller(RyuApp):
 
         #make a flow rule in the flow table
         if out_port != ofproto.OFPP_FLOOD:
-            match = parser.OFPMatch(in_port=in_port, eth_dst=dst_mac, eth_type=0x0800)
+            match = parser.OFPMatch(in_port=in_port, eth_src=src_mac, eth_dst=dst_mac)
             self.__add_flow(datapath, 1, match, actions)
             return
 
@@ -173,8 +175,8 @@ class Controller(RyuApp):
 
         for stat in body:
             stats.append({
-                "src_ip": stat.match.get("ipv4_src", "N/A"),
-                "dst_ip": stat.match.get("ipv4_dst", "N/A"),
+                #"src_ip": stat.match.get("ipv4_src", "N/A"),
+                #"dst_ip": stat.match.get("ipv4_dst", "N/A"),
                 "src_mac": stat.match.get("eth_src", "N/A"),
                 "dst_mac": stat.match.get("eth_dst", "N/A"),
                 "byte_count": stat.byte_count,
