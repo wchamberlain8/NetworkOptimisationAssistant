@@ -80,6 +80,7 @@ class Controller(RyuApp):
             return
         
         src_mac = eth.src
+        self.logger.debug(f"Packet in event received: src_mac={src_mac}")
         dst_mac = eth.dst
         in_port = msg.match['in_port']
         a = False
@@ -164,6 +165,7 @@ class Controller(RyuApp):
         #Get and calculate the flow stats from the switch (from the event)
         body = ev.msg.body
         stats = []
+        payload = {}
 
         for stat in body:
             stats.append({
