@@ -1,5 +1,8 @@
 #!/bin/bash
 
+sudo mn -c &
+wait
+
 SESSION_NAME="test"
 tmux new-session -d -s $SESSION_NAME
 
