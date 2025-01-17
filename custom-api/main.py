@@ -53,6 +53,7 @@ async def retrieve_bandwidth():
 async def get_live_stats():
     #connect to the socket and request the live stats from the controller
 
+    global top_consumer_cache
     top_consumer_cache = None
 
     try:
@@ -70,7 +71,7 @@ async def get_live_stats():
         elif time.time() - start_time > 10:
             return {"message": "Timeout: The API did not recieve stats from the controller in time"}
         else:
-            continue
+            time.sleep(0.1)
 
 
 
