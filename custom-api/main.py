@@ -2,12 +2,13 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import socket
 import time
+import asyncio
 
 #initialise the FastAPI
 app = FastAPI()
 
 bandwidth_stats = {}
-top_consumer_cache = None
+top_consumer_cache = asyncio.Queue()
 
 #data model if we want to pass some data to the API
 class InputModel(BaseModel):
@@ -63,15 +64,11 @@ async def get_live_stats():
     except Exception as e:
         print(f"Error connecting to the controller: {e}")
 
-    start_time = time.time()
-    while True:
-        if top_consumer_cache:
-            print(f"Top consumer cache: {top_consumer_cache}")
-            return {"top_consumer": top_consumer_cache}
-        elif time.time() - start_time > 10:
-            return {"message": "Timeout: The API did not recieve stats from the controller in time"}
-        else:
-            time.sleep(0.1)
+    try:
+        top_consumer = await asyncio.wait_for(top_consumer_cache.get(), timeout=10)
+        return {"top_consumer": top_consumer}
+    except asyncio.TimeoutError:
+        return {"message": "Timeout: The API did not receive stats from the controller in time"}
 
 
 
@@ -114,8 +111,7 @@ async def send_live_stats(data: dict):
         try:
             top_consumer = max(live_flows, key=lambda x: x["bandwidth"], default=None) #find the highest bandwidth consumer
             print(f"Top_consumer = {top_consumer}\n")
-            top_consumer_cache = top_consumer
-            print(f"Top_consumer_cache = {top_consumer_cache}\n")
+            await top_consumer_cache.put(top_consumer)
         except Exception as e:
             print(f"Error calculating top consumer: {e}")
     else:
