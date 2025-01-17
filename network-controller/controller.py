@@ -214,6 +214,8 @@ class Controller(RyuApp):
                 "duration_sec": stat.duration_sec
             })
 
+        self.logger.info(f"INSIDE HANDLER: Stats = {stats}")
+
         #need to send the stats back to the request_live_stats function
         self.stats_data = stats
         self.stats_data_event.set()
@@ -250,6 +252,8 @@ class Controller(RyuApp):
                 "snapshot2": stats2
             }
         }
+
+        self.logger.info(f"Payload being sent: {payload}")
 
         try:
             response = requests.post("http://127.0.0.1:8000/send_live_stats", json=payload)
