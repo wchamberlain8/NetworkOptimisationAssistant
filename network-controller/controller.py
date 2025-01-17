@@ -74,7 +74,7 @@ class Controller(RyuApp):
         self.logger.info("Handshake taken place with {}".format(dpid_to_str(datapath.id)))
         self.__add_flow(datapath, 0, match, actions)
         #self.request_stats_periodically(datapath)
-        threading.Thread(target=self.start_socket_server(datapath), daemon=True).start()
+        threading.Thread(target=self.start_socket_server, args=(datapath,), daemon=True).start()
 
 
 
