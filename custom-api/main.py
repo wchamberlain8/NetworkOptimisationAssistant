@@ -55,7 +55,6 @@ async def get_live_stats():
     #connect to the socket and request the live stats from the controller
 
     global top_consumer_cache
-    top_consumer_cache = None
 
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -93,7 +92,7 @@ async def send_live_stats(data: dict):
                     byteDifference = flow2.get("byte_count", 0) - flow1.get("byte_count", 0)
                     packetDifference = flow2.get("packet_count", 0) - flow1.get("packet_count", 0)
 
-                    bandwidth = round((byteDifference * 8) / 1000000)  # bytes to bits to Mbps
+                    bandwidth = round((byteDifference * 8) / 1000000, 2)  # bytes to bits to Mbps
     
                     live_flows.append({
                         "flow_id": flow2.get("flow_id"),
