@@ -89,15 +89,28 @@ async def send_live_stats(data: dict):
 
     for flow1 in snapshot1:
         for flow2 in snapshot2:
-            if flow1.get("flow_id") == flow2.get("flow_id"):
-                if flow1.get("byte_count") != flow2.get("byte_count"):
-                    live_flows.append(flow2)
+            if flow1.get("flow_id") == flow2.get("flow_id"): #make sure we are comparing the same flow
+                if flow1.get("byte_count") != flow2.get("byte_count"): #make sure the flow has changed (is live)
+                    byteDifference = flow2.get("byte_count", 0) - flow1.get("byte_count", 0)
+                    packetDifference = flow2.get("packet_count", 0) - flow1.get("packet_count", 0)
+
+                    bandwidth = round((byteDifference * 8) / 1000000)  # bytes to bits to Mbps
+    
+                    live_flows.append({
+                        "flow_id": flow2.get("flow_id"),
+                        "src_mac": flow2.get("src_mac"),
+                        "dst_mac": flow2.get("dst_mac"),
+                        "byte_count": byteDifference,
+                        "packet_count": packetDifference,
+                        "bandwidth": bandwidth
+                    })
                     break
+
 
     if live_flows:
         print(f"Here are the live flows: {live_flows}\n")
         try:
-            top_consumer = max(live_flows, key=lambda x: round((x.get("byte_count", 0) * 8) / x.get("duration_sec", 1) / 1000000), default=None) #find the highest bandwidth consumer
+            top_consumer = max(live_flows, key=lambda x: x["bandwidth"], default=None) #find the highest bandwidth consumer
             top_consumer_cache = top_consumer
         except Exception as e:
             print(f"Error calculating top consumer: {e}")

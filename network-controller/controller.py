@@ -34,6 +34,8 @@ class Controller(RyuApp):
 
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
+        self.stats_data = None
+        self.stats_data_event = threading.Event()
        
 
     def start_socket_server(self, datapath):
@@ -50,7 +52,7 @@ class Controller(RyuApp):
                 if data:
                     command = data.decode("utf-8")
                     if command == "get_live_stats":
-                        self.get_and_send_live_stats(datapath)
+                        self.request_live_stats(datapath)
                     else:
                         print("Invalid command received from socket.")
 
@@ -197,64 +199,48 @@ class Controller(RyuApp):
     #     datapath.send_msg(request)
 
 
-    # @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
-    # def flow_stats_response_handler(self, ev):
-    #     #Get and calculate the flow stats from the switch (from the event)
-    #     body = ev.msg.body
-    #     stats = []
-
-    #     for stat in body:
-    #         stats.append({
-    #             "src_mac": stat.match.get("eth_src", "N/A"),
-    #             "dst_mac": stat.match.get("eth_dst", "N/A"),
-    #             "byte_count": stat.byte_count,
-    #             "packet_count": stat.packet_count,
-    #             "duration_sec": stat.duration_sec
-    #         })
-
-    #     return stats
-    
-
-    def request_live_flow_stats(self, datapath):
-        #Request two sets of stats from the switch, with a second delay between
-        parser = datapath.ofproto_parser
-        request = parser.OFPFlowStatsRequest(datapath)
-        datapath.send_msg(request)
-
+    @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
+    def flow_stats_response_handler(self, ev):
+        #Get and calculate the flow stats from the switch (from the event)
+        body = ev.msg.body
         stats = []
 
-        self.logger.info("Requesting a set of live flow stats...")
+        for stat in body:
+            stats.append({
+                "src_mac": stat.match.get("eth_src", "N/A"),
+                "dst_mac": stat.match.get("eth_dst", "N/A"),
+                "byte_count": stat.byte_count,
+                "packet_count": stat.packet_count,
+                "duration_sec": stat.duration_sec
+            })
 
-        @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
-        def handle_flow_stats_reply(self, ev):
-            body = ev.msg.body
-
-            for stat in body:
-                flow_id = stat.match.get("eth_src", "0") + stat.match.get("eth_dst", "0") #TODO: improve this in future, make a hash function
-                stats.append({
-                    "flow_id": flow_id,
-                    "src_mac": stat.match.get("eth_src", "N/A"),
-                    "dst_mac": stat.match.get("eth_dst", "N/A"),
-                    "byte_count": stat.byte_count,
-                    "packet_count": stat.packet_count,
-                    "duration_sec": stat.duration_sec
-                })
-
-        self.logger.info(f"Stats received in this set: {stats}\n")
-        
-        if stats == []:
-            self.logger.info("HERES THE ERROR BUCKO!!!")
-
-        return stats
+        #need to send the stats back to the request_live_stats function
+        self.stats_data = stats
+        self.stats_data_event.set()
     
-    def get_and_send_live_stats(self, datapath):
+    
+    def request_live_stats(self, datapath):
         #Upon communication from the API, get the live flow stats (two sets, a second apart) and send them to the API
 
         self.logger.info("Starting the process to get and send live stats...")
 
-        stats1 = self.request_live_flow_stats(datapath)
-        sleep(1)
-        stats2 = self.request_live_flow_stats(datapath)
+        parser = datapath.ofproto_parser
+        request = parser.OFPFlowStatsRequest(datapath)
+        
+        stats1 = []
+        stats2 = []
+        
+        datapath.send_msg(request) #send a request for the first set of stats
+        self.stats_data_event.wait()
+        stats1 = self.stats_data
+        self.stats_data_event.clear()
+
+        sleep(1) #wait a second
+
+        datapath.send_msg(request) #send another request for the second set of stats
+        self.stats_data_event.wait()
+        stats2 = self.stats_data
+        self.stats_data_event.clear()
 
         self.logger.info("Live stats received, sending to API...")
 
