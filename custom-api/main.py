@@ -82,6 +82,9 @@ async def send_live_stats(data: dict):
     snapshot2 = data.get("snapshot2", [])
     global top_consumer_cache
 
+    print("Snapshot 1: ", snapshot1)
+    print("Snapshot 2: ", snapshot2)
+
     live_flows = []
 
     for flow1 in snapshot1:
@@ -98,3 +101,5 @@ async def send_live_stats(data: dict):
             top_consumer_cache = top_consumer
         except Exception as e:
             print(f"Error calculating top consumer: {e}")
+    else:
+        print("There is currently nothing using bandwidth.")
