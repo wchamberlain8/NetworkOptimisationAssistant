@@ -223,6 +223,8 @@ class Controller(RyuApp):
 
         stats = []
 
+        self.logger.info("Requesting a set of live flow stats...")
+
         def handle_flow_stats_reply(self, ev):
             body = ev.msg.body
 
@@ -246,10 +248,13 @@ class Controller(RyuApp):
     def get_and_send_live_stats(self, datapath):
         #Upon communication from the API, get the live flow stats (two sets, a second apart) and send them to the API
 
+        self.logger.info("Starting the process to get and send live stats...")
 
         stats1 = self.request_live_flow_stats(datapath)
         sleep(1)
         stats2 = self.request_live_flow_stats(datapath)
+
+        self.logger.info("Live stats received, sending to API...")
 
         payload = {
             "stats": {

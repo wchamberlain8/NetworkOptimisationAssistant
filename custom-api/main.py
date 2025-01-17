@@ -76,6 +76,7 @@ async def get_live_stats():
 async def send_live_stats(data: dict):
     snapshot1 = data.get("snapshot1", [])
     snapshot2 = data.get("snapshot2", [])
+    global top_consumer_cache
 
     live_flows = []
 
@@ -87,6 +88,7 @@ async def send_live_stats(data: dict):
                     break
 
     if live_flows:
+        print(f"Here are the live flows: {live_flows}\n")
         try:
             top_consumer = max(live_flows, key=lambda x: round((x.get("byte_count", 0) * 8) / x.get("duration_sec", 1) / 1000000), default=None) #find the highest bandwidth consumer
             top_consumer_cache = top_consumer
