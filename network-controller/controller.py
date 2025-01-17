@@ -34,9 +34,9 @@ class Controller(RyuApp):
 
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
-        threading.Thread(target=self.start_socket_server, daemon=True).start()
+       
 
-    def start_socket_server(self):
+    def start_socket_server(self, datapath):
         #Start a socket server to receive data from the API
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(('127.0.0.2', 9090))
@@ -50,7 +50,7 @@ class Controller(RyuApp):
                 if data:
                     command = data.decode("utf-8")
                     if command == "get_live_stats":
-                        self.get_and_send_live_stats()
+                        self.get_and_send_live_stats(datapath)
                     else:
                         print("Invalid command received from socket.")
 
@@ -74,7 +74,7 @@ class Controller(RyuApp):
         self.logger.info("Handshake taken place with {}".format(dpid_to_str(datapath.id)))
         self.__add_flow(datapath, 0, match, actions)
         #self.request_stats_periodically(datapath)
-
+        threading.Thread(target=self.start_socket_server(datapath), daemon=True).start()
 
 
 
