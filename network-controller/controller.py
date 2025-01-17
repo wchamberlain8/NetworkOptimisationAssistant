@@ -240,6 +240,11 @@ class Controller(RyuApp):
                     "duration_sec": stat.duration_sec
                 })
 
+        self.logger.info(f"Stats received in this set: {stats}\n")
+        
+        if stats == []:
+            self.logger.info("HERES THE ERROR BUCKO!!!")
+
         return stats
     
     def get_and_send_live_stats(self, datapath):
