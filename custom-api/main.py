@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import socket
+import time
 
 #initialise the FastAPI
 app = FastAPI()
@@ -61,9 +62,12 @@ async def get_live_stats():
     except Exception as e:
         print(f"Error connecting to the controller: {e}")
 
+    start_time = time.time()
     while True:
         if top_consumer_cache:
             return {"top_consumer": top_consumer_cache}
+        elif time.time() - start_time > 10:
+            return {"message": "Timeout: The API did not recieve stats from the controller in time"}
         else:
             continue
 

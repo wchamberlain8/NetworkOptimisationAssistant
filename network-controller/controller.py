@@ -73,7 +73,7 @@ class Controller(RyuApp):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
         self.logger.info("Handshake taken place with {}".format(dpid_to_str(datapath.id)))
         self.__add_flow(datapath, 0, match, actions)
-        self.request_stats_periodically(datapath)
+        #self.request_stats_periodically(datapath)
 
 
 
