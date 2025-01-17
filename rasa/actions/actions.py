@@ -122,6 +122,8 @@ class ActionRetrieveBandwidth(Action):
                 data = response.json()
                 top_consumer = data.get("top_consumer")
 
+                print(f"Top consumer: {top_consumer}")
+
                 if top_consumer:
                     message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['bandwidth']} Mbps."
                 else:

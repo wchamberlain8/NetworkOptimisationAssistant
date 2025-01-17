@@ -65,6 +65,7 @@ async def get_live_stats():
     start_time = time.time()
     while True:
         if top_consumer_cache:
+            print(f"Top consumer cache: {top_consumer_cache}")
             return {"top_consumer": top_consumer_cache}
         elif time.time() - start_time > 10:
             return {"message": "Timeout: The API did not recieve stats from the controller in time"}
@@ -111,7 +112,9 @@ async def send_live_stats(data: dict):
         print(f"Here are the live flows: {live_flows}\n")
         try:
             top_consumer = max(live_flows, key=lambda x: x["bandwidth"], default=None) #find the highest bandwidth consumer
+            print(f"Top_consumer = {top_consumer}\n")
             top_consumer_cache = top_consumer
+            print(f"Top_consumer_cache = {top_consumer_cache}\n")
         except Exception as e:
             print(f"Error calculating top consumer: {e}")
     else:
