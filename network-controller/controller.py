@@ -225,6 +225,7 @@ class Controller(RyuApp):
 
         self.logger.info("Requesting a set of live flow stats...")
 
+        @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
         def handle_flow_stats_reply(self, ev):
             body = ev.msg.body
 
@@ -238,10 +239,6 @@ class Controller(RyuApp):
                     "packet_count": stat.packet_count,
                     "duration_sec": stat.duration_sec
                 })
-
-        self.add_event_handler(ofp_event.EventOFPFlowStatsReply, handle_flow_stats_reply)
-        sleep(1)
-        self.remove_event_handler(ofp_event.EventOFPFlowStatsReply, handle_flow_stats_reply)
 
         return stats
     
