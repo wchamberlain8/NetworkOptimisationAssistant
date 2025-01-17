@@ -4,6 +4,7 @@
 # See this guide on how to implement these action:
 # https://rasa.com/docs/rasa/custom-actions
 
+import time
 import requests
 
 from typing import Any, Text, Dict, List
@@ -79,7 +80,7 @@ class ActionCompareTerms(Action):
 
         return []
     
-
+#Test action that can help debug if the API is working/if Rasa can connect to it
 class ActionConnectToAPI(Action):
 
     def name (self) -> Text:
@@ -106,6 +107,7 @@ class ActionConnectToAPI(Action):
 
         return []
 
+#Action to retrieve the current top consumer of bandwidth on a network 
 class ActionRetrieveBandwidth(Action):
 
     def name (self) -> Text:
@@ -117,6 +119,7 @@ class ActionRetrieveBandwidth(Action):
 
         try:
             response = requests.get(url)
+            startTime = time.time()
 
             if response.status_code == 200:
                 data = response.json()
@@ -125,7 +128,8 @@ class ActionRetrieveBandwidth(Action):
                 print(f"Top consumer: {top_consumer}")
 
                 if top_consumer:
-                    message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['bandwidth']} Mbps."
+                    endTime = time.time()
+                    message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['bandwidth']} Mbps. Operation took {endTime - startTime} seconds." #Added in a time record for performance checking
                 else:
                     message = "No devices could be found using bandwidth."
             else:

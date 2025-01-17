@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import socket
-import time
 import asyncio
 
 #initialise the FastAPI
@@ -52,10 +51,9 @@ async def retrieve_bandwidth():
 #api endpoint for Rasa to request live stats
 @app.get("/get_live_stats")
 async def get_live_stats():
-    #connect to the socket and request the live stats from the controller
-
     global top_consumer_cache
 
+    #connect to the socket and request the live stats from the controller
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(("127.0.0.2", 9090))
@@ -63,27 +61,23 @@ async def get_live_stats():
     except Exception as e:
         print(f"Error connecting to the controller: {e}")
 
+    #using asyncio to wait for the top consumer to be calculated, then returning a result, if any
     try:
-        top_consumer = await asyncio.wait_for(top_consumer_cache.get(), timeout=10)
+        top_consumer = await asyncio.wait_for(top_consumer_cache.get(), timeout=5)
         return {"top_consumer": top_consumer}
     except asyncio.TimeoutError:
         return {"message": "Timeout: The API did not receive stats from the controller in time"}
 
 
 
-
-
 #api endpoint for retrieving and deciphering live flow stats to find top LIVE consumer
 @app.post("/send_live_stats")
 async def send_live_stats(data: dict):
+    global top_consumer_cache
+    live_flows = []
+
     snapshot1 = data.get("snapshot1", [])
     snapshot2 = data.get("snapshot2", [])
-    global top_consumer_cache
-
-    print("Snapshot 1: ", snapshot1)
-    print("Snapshot 2: ", snapshot2)
-
-    live_flows = []
 
     for flow1 in snapshot1:
         for flow2 in snapshot2:
@@ -92,7 +86,7 @@ async def send_live_stats(data: dict):
                     byteDifference = flow2.get("byte_count", 0) - flow1.get("byte_count", 0)
                     packetDifference = flow2.get("packet_count", 0) - flow1.get("packet_count", 0)
 
-                    bandwidth = round((byteDifference * 8) / 1000000, 2)  # bytes to bits to Mbps
+                    bandwidth = round((byteDifference * 8) / 1000000, 2)
     
                     live_flows.append({
                         "flow_id": flow2.get("flow_id"),
@@ -104,14 +98,13 @@ async def send_live_stats(data: dict):
                     })
                     break
 
-
     if live_flows:
         print(f"Here are the live flows: {live_flows}\n")
         try:
             top_consumer = max(live_flows, key=lambda x: x["bandwidth"], default=None) #find the highest bandwidth consumer
-            print(f"Top_consumer = {top_consumer}\n")
-            await top_consumer_cache.put(top_consumer)
+            print(f"Top Consumer = {top_consumer}\n")
+            await top_consumer_cache.put(top_consumer) #put the top consumer into the cache
         except Exception as e:
             print(f"Error calculating top consumer: {e}")
     else:
-        print("There is currently nothing using bandwidth.")
+        print("***** There is currently nothing using bandwidth *****\n")

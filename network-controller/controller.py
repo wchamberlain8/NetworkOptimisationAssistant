@@ -173,7 +173,7 @@ class Controller(RyuApp):
 
 
 
-
+    #The below functions are for the future, to be used for the historic bandwidth stats
 
     # def request_stats_periodically(self, datapath):
     #     self.request_flow_stats(datapath)
