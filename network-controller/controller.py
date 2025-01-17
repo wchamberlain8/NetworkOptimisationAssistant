@@ -206,7 +206,9 @@ class Controller(RyuApp):
         stats = []
 
         for stat in body:
+            flow_id = stat.match.get("eth_src", "0") + stat.match.get("eth_dst", "0") #TODO: improve this in future, make a hash function
             stats.append({
+                "flow_id": flow_id,
                 "src_mac": stat.match.get("eth_src", "N/A"),
                 "dst_mac": stat.match.get("eth_dst", "N/A"),
                 "byte_count": stat.byte_count,
@@ -247,10 +249,8 @@ class Controller(RyuApp):
         self.logger.info("Live stats received, sending to API...")
 
         payload = {
-            "stats": {
-                "snapshot1": stats1,
-                "snapshot2": stats2
-            }
+            "snapshot1": stats1,
+            "snapshot2": stats2
         }
 
         self.logger.info(f"Payload being sent: {payload}")
