@@ -129,7 +129,8 @@ class ActionRetrieveBandwidth(Action):
 
                 if top_consumer:
                     endTime = time.time()
-                    message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['bandwidth']} Mbps. Operation took {endTime - startTime} seconds." #Added in a time record for performance checking
+                    elapsedTime = endTime - startTime
+                    message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['bandwidth']:.3f} Mbps. Operation took {elapsedTime:.3f} seconds." #Added in a time record for performance checking
                 else:
                     message = "No devices could be found using bandwidth."
             else:

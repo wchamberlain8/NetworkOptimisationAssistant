@@ -1,5 +1,7 @@
 #!/bin/bash
 
+tmux kill-session -t test
+
 sudo mn -c &
 wait
 
