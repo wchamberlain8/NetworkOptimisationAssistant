@@ -1,5 +1,8 @@
 from mininet.topo import Topo
 from mininet.link import TCLink
+from mininet.net import Mininet
+from mininet.node import OVSController
+import time
 
 
 #*******************************************************************************************************************************
@@ -7,6 +10,7 @@ from mininet.link import TCLink
 #*******************************************************************************************************************************
 
 #usage: sudo mn --switch ovsk --controller remote --custom ./topology.py --topo testTopology
+#alternative usage: sudo python3 topology.py
 
 
 class TutorialTopology(Topo):
@@ -18,22 +22,42 @@ class TutorialTopology(Topo):
 
         # connect n hosts to the switch
         hosts = []
-        for h in range(0, 5):
+        for h in range(1, 4):
             hosts.append(self.addHost(f"h{h+1}"))
             self.addLink(s1, hosts[h], cls=TCLink, bw=40, delay='15ms')
 
-def simulateTraffic(self, host1, host2):
-    "simulateTraffic is a command that will simulate traffic between two hosts"
+        hosts.append(self.addHost('h1'))
+        hosts.append(self.addHost('h5'))
+        self.addLink(s1, hosts[0], cls=TCLink, bw=80, delay='15ms')
+        self.addLink(s1, hosts[4], cls=TCLink, bw=80, delay='15ms')
+
+def simulateTraffic(net):
+    "simulateTraffic is a command that will simulate background traffic on the network"
     
-    print(f"Simulating traffic between {host1} and {host2}... \n")
-    h1 = self.get(host1)
-    h2 = self.get(host2)
-    h1.cmd('iperf -s &')
-    h2.cmd(f'iperf -c  + {h1}')
+    h1, h2 = net.get('h1', 'h2')
+    h3, h5 = net.get('h3', 'h5')
 
-
+    h1.cmd('iperf -s &') #start the server on h1
+    time.sleep(1)
+    h2.cmd(f'iperf -c  + {h1} -t 0 &') #start the client on h2
+    h5.cmd(f'iperf -c + {h1} & -t 0 &') #start the client with faster bandwidth on h4
+    h3.cmd('ping 10.0.0.4 > /dev/null &') #start the ping on h3 to h5 (supressed output)
 
 # the topologies accessible to the mn tool's `--topo` flag
 topos = {
-    'testTopology': (lambda: TutorialTopology()),
+    'testTopology': (lambda: TutorialTopology()), #will add in more complex topologies in the future
 }
+
+def main():
+    topo = TutorialTopology()
+    net = Mininet(topo=topo, link=TCLink, controller=OVSController)
+    net.start()
+
+    time.sleep(60)
+    print("Rasa is now available...")
+    simulateTraffic(net)
+    net.interact()
+    net.stop()
+
+if __name__ == '__main__':
+    main()
