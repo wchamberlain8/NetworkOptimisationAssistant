@@ -1,7 +1,7 @@
 from mininet.topo import Topo
 from mininet.link import TCLink
 from mininet.net import Mininet
-from mininet.node import OVSController
+from mininet.node import RemoteController
 import time
 
 
@@ -50,7 +50,7 @@ topos = {
 
 def main():
     topo = TutorialTopology()
-    net = Mininet(topo=topo, link=TCLink, controller=OVSController)
+    net = Mininet(topo=topo, link=TCLink, controller=RemoteController, switch='ovsk')
     net.start()
 
     time.sleep(60)
