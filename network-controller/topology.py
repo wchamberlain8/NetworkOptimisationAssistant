@@ -23,8 +23,8 @@ class TutorialTopology(Topo):
         # connect n hosts to the switch
         hosts = []
         for h in range(1, 4):
-            hosts.append(self.addHost(f"h{h+1}"))
-            self.addLink(s1, hosts[h], cls=TCLink, bw=40, delay='15ms')
+            hosts.append(self.addHost(f"h{h}"))
+            self.addLink(s1, hosts[h-1], cls=TCLink, bw=40, delay='15ms')
 
         hosts.append(self.addHost('h1'))
         hosts.append(self.addHost('h5'))
