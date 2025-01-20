@@ -19,8 +19,18 @@ class TutorialTopology(Topo):
         # connect n hosts to the switch
         hosts = []
         for h in range(0, 5):
-            hosts.append(self.addHost("h{}".format(h+1)))
+            hosts.append(self.addHost(f"h{h+1}"))
             self.addLink(s1, hosts[h], cls=TCLink, bw=40, delay='15ms')
+
+def simulateTraffic(self, host1, host2):
+    "simulateTraffic is a command that will simulate traffic between two hosts"
+    
+    print(f"Simulating traffic between {host1} and {host2}... \n")
+    h1 = self.get(host1)
+    h2 = self.get(host2)
+    h1.cmd('iperf -s &')
+    h2.cmd(f'iperf -c  + {h1}')
+
 
 
 # the topologies accessible to the mn tool's `--topo` flag

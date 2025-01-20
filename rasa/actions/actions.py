@@ -4,6 +4,7 @@
 # See this guide on how to implement these action:
 # https://rasa.com/docs/rasa/custom-actions
 
+import time
 import requests
 
 from typing import Any, Text, Dict, List
@@ -79,7 +80,7 @@ class ActionCompareTerms(Action):
 
         return []
     
-
+#Test action that can help debug if the API is working/if Rasa can connect to it
 class ActionConnectToAPI(Action):
 
     def name (self) -> Text:
@@ -104,4 +105,38 @@ class ActionConnectToAPI(Action):
 
         dispatcher.utter_message(text=message)
 
+        return []
+
+#Action to retrieve the current top consumer of bandwidth on a network 
+class ActionRetrieveBandwidth(Action):
+
+    def name (self) -> Text:
+        return "action_retrieve_bandwidth"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        url = "http://127.0.0.1:8000/get_live_stats"
+
+        try:
+            response = requests.get(url)
+            startTime = time.time()
+
+            if response.status_code == 200:
+                data = response.json()
+                top_consumer = data.get("top_consumer")
+
+                print(f"Top consumer: {top_consumer}")
+
+                if top_consumer:
+                    endTime = time.time()
+                    elapsedTime = endTime - startTime
+                    message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['bandwidth']:.3f} Mbps. Operation took {elapsedTime:.3f} seconds." #Added in a time record for performance checking
+                else:
+                    message = "No devices could be found using bandwidth."
+            else:
+                message = f"Error: Received {response.status_code} from the API."
+        except Exception as e:
+            message = f"API call failed: {str(e)}"
+
+        dispatcher.utter_message(text=message)
         return []

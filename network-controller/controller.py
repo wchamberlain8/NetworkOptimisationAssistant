@@ -14,6 +14,7 @@ tutorial you should convert this to a layer 2 learning switch.
 See the README for more...
 """
 
+from time import sleep
 from ryu.base.app_manager import RyuApp
 from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER, set_ev_cls
@@ -21,6 +22,8 @@ from ryu.ofproto import ofproto_v1_3
 from ryu.lib.packet import *
 from ryu.lib.dpid import dpid_to_str
 import threading
+import socket
+import requests
 
 
 class Controller(RyuApp):
@@ -31,6 +34,27 @@ class Controller(RyuApp):
 
     def __init__(self, *args, **kwargs):
         super(Controller, self).__init__(*args, **kwargs)
+        self.stats_data = None
+        self.stats_data_event = threading.Event()
+       
+
+    def start_socket_server(self, datapath):
+        #Start a socket server to receive data from the API
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('127.0.0.2', 9090))
+        s.listen(5)
+
+        while True:
+            connection, address = s.accept()
+            with connection:
+                print(f"Connected to {address}")
+                data = connection.recv(1024)
+                if data:
+                    command = data.decode("utf-8")
+                    if command == "get_live_stats":
+                        self.request_live_stats(datapath)
+                    else:
+                        print("Invalid command received from socket.")
 
 
 
@@ -51,9 +75,8 @@ class Controller(RyuApp):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
         self.logger.info("Handshake taken place with {}".format(dpid_to_str(datapath.id)))
         self.__add_flow(datapath, 0, match, actions)
-        self.logger.info("Lets start collecting stats!")
-        self.request_stats_everysooften(datapath)
-
+        #self.request_stats_periodically(datapath)
+        threading.Thread(target=self.start_socket_server, args=(datapath,), daemon=True).start()
 
 
 
@@ -80,9 +103,14 @@ class Controller(RyuApp):
             return
         
         src_mac = eth.src
+        
+        self.logger.info(f"Packet in event received: src_mac={src_mac}")
+
         dst_mac = eth.dst
         in_port = msg.match['in_port']
         a = False
+
+        self.logger.info(f"Processing packet in: src_mac={src_mac}, dst_mac={dst_mac}, in_port={in_port}")
 
         if dst_mac.startswith('33:33'):
             self.logger.info(f"Multicast traffic detected. src={src_mac}, dst={dst_mac}")
@@ -92,7 +120,6 @@ class Controller(RyuApp):
             self.logger.info(f"Broadcast packet detected. src={src_mac}, dst={dst_mac}")
             a = True
             
-
         self.mac_to_port.setdefault(dpid, {})
 
         self.mac_to_port[dpid][src_mac] = in_port #store that the device with src_mac reachable through in_port on dpid 
@@ -119,11 +146,10 @@ class Controller(RyuApp):
 
         #make a flow rule in the flow table
         if out_port != ofproto.OFPP_FLOOD:
-            match = parser.OFPMatch(in_port=in_port, eth_dst=dst_mac)
+            match = parser.OFPMatch(in_port=in_port, eth_src=src_mac, eth_dst=dst_mac)
             self.__add_flow(datapath, 1, match, actions)
             return
-
-
+        
 
 
 
@@ -140,39 +166,96 @@ class Controller(RyuApp):
         parser = datapath.ofproto_parser
         inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
         mod = parser.OFPFlowMod(datapath=datapath, priority=priority, match=match, instructions=inst)
-        #self.logger.info("Flow-Mod written to {}".format(dpid_to_str(datapath.id)))
         datapath.send_msg(mod)
 
 
-    def request_stats_everysooften(self, datapath):
-        self.logger.info("About to collect me some stats!")
-        self.request_stats(datapath)
-        threading.Timer(10, self.request_stats_everysooften, args=[datapath]).start()
 
 
-    def request_stats(self, datapath):
-        #Request flow stats from the switch'''
-        ofproto = datapath.ofproto
-        parser = datapath.ofproto_parser
-        request = parser.OFPFlowStatsRequest(datapath)
-        self.logger.info("Sending a request for stats now...")
-        datapath.send_msg(request)
 
+
+    #The below functions are for the future, to be used for the historic bandwidth stats
+
+    # def request_stats_periodically(self, datapath):
+    #     self.request_flow_stats(datapath)
+    #     #TODO: need to add something here to send the response to the correct API endpoint 
+        
+    #     payload = {}
+    #     self.logger.info(f"Payload being sent: {payload}")
+
+    #     try:
+    #         response = requests.post("http://127.0.0.1:8000/update_stats", json=payload)
+    #     except requests.exceptions.RequestException as e:
+    #         print(f"Error sending data: {e}")
+
+   
+
+    #     threading.Timer(20, self.request_stats_periodically, args=[datapath]).start()
+
+
+    # def request_flow_stats(self, datapath):
+    #     #Request flow stats from the switch
+    #     parser = datapath.ofproto_parser
+    #     request = parser.OFPFlowStatsRequest(datapath)
+    #     datapath.send_msg(request)
 
 
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
-    def stats_response_handler(self, ev):
+    def flow_stats_response_handler(self, ev):
         #Get and calculate the flow stats from the switch (from the event)
-        self.logger.info("Response detected, collating stats...")
         body = ev.msg.body
         stats = []
 
         for stat in body:
+            flow_id = stat.match.get("eth_src", "0") + stat.match.get("eth_dst", "0") #TODO: improve this in future, make a hash function
             stats.append({
-                "match": stat.match,
+                "flow_id": flow_id,
+                "src_mac": stat.match.get("eth_src", "N/A"),
+                "dst_mac": stat.match.get("eth_dst", "N/A"),
                 "byte_count": stat.byte_count,
                 "packet_count": stat.packet_count,
                 "duration_sec": stat.duration_sec
             })
 
-        self.logger.info(f"Stats collected! Here they are: {stats}")
+        self.logger.info(f"INSIDE HANDLER: Stats = {stats}")
+
+        #need to send the stats back to the request_live_stats function
+        self.stats_data = stats
+        self.stats_data_event.set()
+    
+    
+    def request_live_stats(self, datapath):
+        #Upon communication from the API, get the live flow stats (two sets, a second apart) and send them to the API
+
+        self.logger.info("Starting the process to get and send live stats...")
+
+        parser = datapath.ofproto_parser
+        request = parser.OFPFlowStatsRequest(datapath)
+        
+        stats1 = []
+        stats2 = []
+        
+        datapath.send_msg(request) #send a request for the first set of stats
+        self.stats_data_event.wait()
+        stats1 = self.stats_data
+        self.stats_data_event.clear()
+
+        sleep(1) #wait a second
+
+        datapath.send_msg(request) #send another request for the second set of stats
+        self.stats_data_event.wait()
+        stats2 = self.stats_data
+        self.stats_data_event.clear()
+
+        self.logger.info("Live stats received, sending to API...")
+
+        payload = {
+            "snapshot1": stats1,
+            "snapshot2": stats2
+        }
+
+        self.logger.info(f"Payload being sent: {payload}")
+
+        try:
+            response = requests.post("http://127.0.0.1:8000/send_live_stats", json=payload)
+        except requests.exceptions.RequestException as e:
+            print(f"Error sending data: {e}")
