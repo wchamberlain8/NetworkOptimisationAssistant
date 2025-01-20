@@ -26,5 +26,5 @@ tmux new-window -t $SESSION_NAME -n "NOA"
 tmux send-keys -t $SESSION_NAME:2 "source /home/chambe28/typvenv/bin/activate && cd rasa && rasa shell" C-m
 
 tmux select-window -t $SESSION_NAME:1
-tmux select-pane -t $SESSION_NAME:1.0
+tmux select-pane -t $SESSION_NAME:0
 tmux attach-session -t $SESSION_NAME
