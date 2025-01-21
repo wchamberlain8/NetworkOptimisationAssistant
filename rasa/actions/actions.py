@@ -116,24 +116,24 @@ class ActionRetrieveBandwidth(Action):
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 
         url = "http://127.0.0.1:8000/get_live_stats"
-
+        startTime = time.time()
+        
         try:
             response = requests.get(url)
-            startTime = time.time()
-            print("Start time = ", startTime)
 
             if response.status_code == 200:
                 data = response.json()
                 top_consumer = data.get("top_consumer")
+                timeoutMessage = data.get("message")
 
                 print(f"Top consumer: {top_consumer}")
 
                 if top_consumer:
                     endTime = time.time()
-                    print("End time = ", endTime)
                     elapsedTime = endTime - startTime
-                    print("Elapsed time = ", elapsedTime)
                     message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['bandwidth']:.3f} Mbps. Operation took {elapsedTime:.3f} seconds." #Added in a time record for performance checking
+                elif timeoutMessage:
+                    message = timeoutMessage
                 else:
                     message = "No devices could be found using bandwidth."
             else:
