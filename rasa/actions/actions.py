@@ -120,6 +120,7 @@ class ActionRetrieveBandwidth(Action):
         try:
             response = requests.get(url)
             startTime = time.time()
+            print("Start time = ", startTime)
 
             if response.status_code == 200:
                 data = response.json()
@@ -129,7 +130,9 @@ class ActionRetrieveBandwidth(Action):
 
                 if top_consumer:
                     endTime = time.time()
+                    print("End time = ", endTime)
                     elapsedTime = endTime - startTime
+                    print("Elapsed time = ", elapsedTime)
                     message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['bandwidth']:.3f} Mbps. Operation took {elapsedTime:.3f} seconds." #Added in a time record for performance checking
                 else:
                     message = "No devices could be found using bandwidth."

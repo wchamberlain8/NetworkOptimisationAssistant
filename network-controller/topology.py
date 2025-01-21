@@ -41,7 +41,7 @@ def simulateTraffic(net):
     time.sleep(1)
     h2.cmd(f'iperf -c  + {h1} -t 0 &') #start the client on h2
     h5.cmd(f'iperf -c + {h1} & -t 0 &') #start the client with faster bandwidth on h4
-    h3.cmd('ping 10.0.0.4 > /dev/null &') #start the ping on h3 to h5 (supressed output)
+    #h3.cmd('ping 10.0.0.4 > /dev/null &') #start the ping on h3 to h5 (supressed output)
 
 # the topologies accessible to the mn tool's `--topo` flag
 topos = {
