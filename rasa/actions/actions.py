@@ -117,7 +117,7 @@ class ActionRetrieveBandwidth(Action):
 
         url = "http://127.0.0.1:8000/get_live_stats"
         startTime = time.time()
-        
+
         try:
             response = requests.get(url)
 
@@ -131,7 +131,7 @@ class ActionRetrieveBandwidth(Action):
                 if top_consumer:
                     endTime = time.time()
                     elapsedTime = endTime - startTime
-                    message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['bandwidth']:.3f} Mbps. Operation took {elapsedTime:.3f} seconds." #Added in a time record for performance checking
+                    message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['bandwidth']:.2f} Mbps. Operation took {elapsedTime:.3f} seconds." #Added in a time record for performance checking
                 elif timeoutMessage:
                     message = timeoutMessage
                 else:

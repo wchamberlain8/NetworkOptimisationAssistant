@@ -19,15 +19,15 @@ class TutorialTopology(Topo):
         # Add the central switch
         s1 = self.addSwitch('s1')
 
-        # Connect 3 hosts to the switch
-        for h in range(1, 4):
+        # Connect h2, h3, h4 to the switch
+        for h in range(2, 5):
             host = self.addHost(f'h{h}')
             self.addLink(s1, host, cls=TCLink, bw=40, delay='15ms')
 
-        # Add additional hosts and links
-        h4 = self.addHost('h4')
+        # Add additional hosts and links (with greater bandwidth)
+        h1 = self.addHost('h1')
         h5 = self.addHost('h5')
-        self.addLink(s1, h4, cls=TCLink, bw=80, delay='15ms')
+        self.addLink(s1, h1, cls=TCLink, bw=80, delay='15ms')
         self.addLink(s1, h5, cls=TCLink, bw=80, delay='15ms')
 
 def simulateTraffic(net):
@@ -50,11 +50,12 @@ def main():
     topo = TutorialTopology()
     net = Mininet(topo=topo, link=TCLink, controller=RemoteController, switch=OVSSwitch)
     net.start()
-    net.interact()
-    print("The network is now running...")
+
     time.sleep(60)
     print("Rasa is now available...")
     simulateTraffic(net)
+
+    net.interact()
     net.stop()
 
 if __name__ == '__main__':
