@@ -237,23 +237,34 @@ class Controller(RyuApp):
         with self.lock:
             self.live_request = True
 
-            parser = datapath.ofproto_parser
-            request = parser.OFPFlowStatsRequest(datapath)
-            
-            stats1 = []
-            stats2 = []
-            
-            datapath.send_msg(request) #send a request for the first set of stats
-            self.stats_data_event.wait()
+        parser = datapath.ofproto_parser
+        request = parser.OFPFlowStatsRequest(datapath)
+        
+        stats1 = []
+        stats2 = []
+        
+        datapath.send_msg(request) #send a request for the first set of stats
+        
+        if not self.stats_data_event.wait(timeout=3):
+            self.logger.info("Timeout Error: Could not retrieve first snapshot of stats")
+            return
+        
+        with self.lock:
             stats1 = self.stats_data
-            self.stats_data_event.clear()
+        
+        self.stats_data_event.clear()
 
-            sleep(1) #wait a second
+        sleep(1) #wait a second
 
-            datapath.send_msg(request) #send another request for the second set of stats
-            self.stats_data_event.wait()
+        datapath.send_msg(request) #send another request for the second set of stats
+
+        if not self.stats_data_event.wait(timeout=3):
+            self.logger.info("Timeout Error: Could not retrieve second snapshot of stats")
+        
+        with self.lock:
             stats2 = self.stats_data
-            self.stats_data_event.clear()
+
+        self.stats_data_event.clear()
 
         self.logger.info("Live stats received, sending to API...")
 
@@ -268,3 +279,6 @@ class Controller(RyuApp):
             response = requests.post("http://127.0.0.1:8000/send_live_stats", json=payload)
         except requests.exceptions.RequestException as e:
             print(f"Error sending data: {e}")
+
+        with self.lock:
+            self.live_request = False

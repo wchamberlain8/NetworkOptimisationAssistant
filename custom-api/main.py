@@ -27,7 +27,10 @@ async def test(input: InputModel):
 @app.post("/update_historical_stats")
 async def update_historical_stats(data: dict):
     global historical_stats
-    historical_stats = data
+
+    stats = data.get("stats", [])
+    if stats:
+        historical_stats = stats
 
 
 #api endpoint for getting the past x minutes of bandwidth information
@@ -41,14 +44,13 @@ async def get_historic_stats():
     aggregate_count = {}
     max_duration = 0
 
-    for entry in historical_stats:
-        for stat in entry:
-            src_mac = stat["src_mac"]
-            byte_count = stat["byte_count"]
-            duration = stat["duration_sec"]
+    for stat in historical_stats:
+        src_mac = stat["src_mac"]
+        byte_count = stat["byte_count"]
+        duration = stat["duration_sec"]
 
-            aggregate_count[src_mac] = aggregate_count.get(src_mac, 0) + byte_count
-            max_duration = max(max_duration, duration) #figure out how long the network has been live (first flow added)
+        aggregate_count[src_mac] = aggregate_count.get(src_mac, 0) + byte_count
+        max_duration = max(max_duration, duration) #figure out how long the network has been live (first flow added)
 
     network_uptime = round(max_duration/60, 2)
 

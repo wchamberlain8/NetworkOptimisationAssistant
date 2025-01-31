@@ -166,12 +166,12 @@ class ActionRetrieveHistoricBandwidth(Action):
                 for device in data["stats"]:
                     src_mac = device["src_mac"]
                     byte_count = device["overall_byte_count"]
-                    message = message + f"Device {src_mac} has used {byte_count} bytes\n"
+                    message = message + f"• Device {src_mac} has used {byte_count} bytes\n"
 
             else:
                 message = f"Error: Recieved {response.status_code} from the API"
         except Exception as e:
             message = f"API call failed: {str(e)}"
 
-            dispatcher.utter_message(text=message)
-            return []
+        dispatcher.utter_message(text=message)
+        return []
