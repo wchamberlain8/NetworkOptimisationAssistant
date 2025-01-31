@@ -114,6 +114,7 @@ async def get_live_stats():
 async def send_live_stats(data: dict):
     global top_consumer_cache
     live_flows = []
+    aggregate_mac_bandwidth = {}
 
     snapshot1 = data.get("snapshot1", [])
     snapshot2 = data.get("snapshot2", [])
@@ -126,7 +127,7 @@ async def send_live_stats(data: dict):
                     packetDifference = flow2.get("packet_count", 0) - flow1.get("packet_count", 0)
 
                     bandwidth = round((byteDifference * 8) / 1000000, 2)
-    
+
                     live_flows.append({
                         "flow_id": flow2.get("flow_id"),
                         "src_mac": flow2.get("src_mac"),
@@ -139,8 +140,17 @@ async def send_live_stats(data: dict):
 
     if live_flows:
         print(f"Here are the live flows: {live_flows}\n")
+
+        for flow in live_flows:
+            src_mac = flow.get("src_mac")
+
+            if src_mac not in aggregate_mac_bandwidth:
+                aggregate_mac_bandwidth[src_mac] = {"src_mac": src_mac, "total_bandwidth": 0}
+            aggregate_mac_bandwidth[src_mac]["total_bandwidth"] += flow.get("bandwidth")     #if needed, i can easily update this to send the dst_mac to say where stuff is coming from etc.
+
         try:
-            top_consumer = max(live_flows, key=lambda x: x["bandwidth"], default=None) #find the highest bandwidth consumer
+            top_consumer = max(aggregate_mac_bandwidth, key=lambda x: aggregate_mac_bandwidth[x]["total_bandwidth"], default=None) #find the highest bandwidth consumer
+            top_consumer = aggregate_mac_bandwidth[top_consumer]
             print(f"Top Consumer = {top_consumer}\n")
             await top_consumer_cache.put(top_consumer) #put the top consumer into the cache
         except Exception as e:
