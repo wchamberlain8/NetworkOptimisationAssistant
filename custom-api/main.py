@@ -46,15 +46,16 @@ async def get_historic_stats():
 
     for stat in historical_stats:
         src_mac = stat["src_mac"]
+        dst_mac = stat["dst_mac"]
         byte_count = stat["byte_count"]
-        duration = stat["duration_sec"]
+        #duration = stat["duration_sec"]
 
-        if src_mac ==  "N/A":
-            duration = stat["duration_sec"]
+        if src_mac ==  "N/A" and dst_mac == "N/A": #the base flow entry
+            max_duration = stat["duration_sec"]
             continue
 
         aggregate_count[src_mac] = aggregate_count.get(src_mac, 0) + byte_count
-        max_duration = max(max_duration, duration) #figure out how long the network has been live (first flow added)
+        #max_duration = max(max_duration, duration) #figure out how long the network has been live (first flow added)
 
     minutes = max_duration // 60
     seconds = max_duration % 60
