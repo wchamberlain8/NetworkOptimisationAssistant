@@ -2,5 +2,13 @@
 models/
 !models/latest-model.tar.gz
 
-# Ignore cache
+# Ignore caches
 .rasa/cache/
+
+custom-api/__pycache__/
+network-controller/__pycache__/
+rasa/actions/__pycache__/
+
+# Ignore log files
+
+tmux-*.log
