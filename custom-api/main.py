@@ -49,17 +49,23 @@ async def get_historic_stats():
         byte_count = stat["byte_count"]
         duration = stat["duration_sec"]
 
+        if src_mac ==  "N/A":
+            duration = stat["duration_sec"]
+            continue
+
         aggregate_count[src_mac] = aggregate_count.get(src_mac, 0) + byte_count
         max_duration = max(max_duration, duration) #figure out how long the network has been live (first flow added)
 
-    network_uptime = round(max_duration/60, 2)
+    minutes = max_duration // 60
+    seconds = max_duration % 60
+    network_uptime = f"{minutes} min {seconds} secs"
 
     stats_list = []
 
     for src_mac, byte_count in aggregate_count.items():
         stats = {
             "src_mac": src_mac,
-            "overall_byte_count": byte_count
+            "overall_byte_count": format_bytes(byte_count)
         }
         stats_list.append(stats)
 
@@ -71,7 +77,15 @@ async def get_historic_stats():
 
     return payload
 
-
+def format_bytes(bytes):
+    if bytes >= 1_000_000_000:
+        return f"{round(bytes / 1_000_000_000, 2)} GB"
+    elif bytes >= 1_000_000:
+        return f"{round(bytes / 1_000_000, 2)} MB"
+    elif bytes >= 1_000:
+        return f"{round(bytes / 1_000, 2)} KB"
+    else:
+        return f"{bytes} B"
 
 #api endpoint for Rasa to request live stats
 @app.get("/get_live_stats")

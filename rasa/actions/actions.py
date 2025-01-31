@@ -161,12 +161,12 @@ class ActionRetrieveHistoricBandwidth(Action):
                 #extract the data
 
                 uptime = data["uptime"]
-                message = f"Network has been online for {uptime} minutes. Here's the usage data in that time:\n"
+                message = f"Network has been online for {uptime}. Here's the usage data in that time:\n"
 
                 for device in data["stats"]:
                     src_mac = device["src_mac"]
                     byte_count = device["overall_byte_count"]
-                    message = message + f"• Device {src_mac} has used {byte_count} bytes\n"
+                    message = message + f"• Device {src_mac} has used {byte_count}\n"
 
             else:
                 message = f"Error: Recieved {response.status_code} from the API"
