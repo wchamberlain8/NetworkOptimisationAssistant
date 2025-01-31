@@ -143,3 +143,35 @@ class ActionRetrieveBandwidth(Action):
 
         dispatcher.utter_message(text=message)
         return []
+    
+class ActionRetrieveHistoricBandwidth(Action):
+
+    def name (self) -> Text:
+        return "action_retrieve_historic_data"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        url = "http://127.0.0.1:8000/get_historic_stats"
+
+        try:
+            response = requests.get(url)
+
+            if response.status_code == 200:
+                data = response.json()
+                #extract the data
+
+                uptime = data["uptime"]
+                message = f"Network has been online for {uptime} minutes. Here's the usage data in that time:\n"
+
+                for device in data["stats"]:
+                    src_mac = device["src_mac"]
+                    byte_count = device["overall_byte_count"]
+                    message = message + f"Device {src_mac} has used {byte_count} bytes\n"
+
+            else:
+                message = f"Error: Recieved {response.status_code} from the API"
+        except Exception as e:
+            message = f"API call failed: {str(e)}"
+
+            dispatcher.utter_message(text=message)
+            return []

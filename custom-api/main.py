@@ -7,6 +7,7 @@ import asyncio
 app = FastAPI()
 
 bandwidth_stats = {}
+historical_stats = {}
 top_consumer_cache = asyncio.Queue()
 
 #data model if we want to pass some data to the API
@@ -23,28 +24,50 @@ async def test(input: InputModel):
 
 
 #api endpoint for bandwidth stats
-@app.post("/update_stats")
-async def update_stats(data: dict):
-    global bandwidth_stats
-    bandwidth_stats = data
+@app.post("/update_historical_stats")
+async def update_historical_stats(data: dict):
+    global historical_stats
+    historical_stats = data
 
 
+#api endpoint for getting the past x minutes of bandwidth information
+@app.get("/get_historic_stats")
+async def get_historic_stats():
+    global historical_stats
 
-#api endpoint for getting the bandwidth information
-@app.get("/retrieve_bandwidth")
-async def retrieve_bandwidth():
-    global bandwidth_stats
-    top_consumer = None
+    if not historical_stats:
+        return {"message": "No bandwidth data has been recorded"}
     
-    if not bandwidth_stats or "stats" not in bandwidth_stats or not bandwidth_stats["stats"]:
-        print("ERROR: NO DATA FOUND")
-    else:
-        try:
-            top_consumer = max(bandwidth_stats["stats"], key=lambda x: round((x.get("byte_count", 0) * 8) / x.get("duration_sec", 1) / 1000000), default=None) #find the highest bandwidth consumer
-        except Exception as e:
-            print(f"Error calculating top consumer: {e}")
+    aggregate_count = {}
+    max_duration = 0
+
+    for entry in historical_stats:
+        for stat in entry:
+            src_mac = stat["src_mac"]
+            byte_count = stat["byte_count"]
+            duration = stat["duration_sec"]
+
+            aggregate_count[src_mac] = aggregate_count.get(src_mac, 0) + byte_count
+            max_duration = max(max_duration, duration) #figure out how long the network has been live (first flow added)
+
+    network_uptime = round(max_duration/60, 2)
+
+    stats_list = []
+
+    for src_mac, byte_count in aggregate_count.items():
+        stats = {
+            "src_mac": src_mac,
+            "overall_byte_count": byte_count
+        }
+        stats_list.append(stats)
+
     
-    return {"top_consumer": top_consumer}
+    payload = {
+        "uptime": network_uptime,
+        "stats": stats_list
+    }
+
+    return payload
 
 
 

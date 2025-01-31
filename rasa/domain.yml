@@ -11,7 +11,8 @@ intents:
   - ask_for_explanation
   - ask_for_comparison
   - connect_to_api
-  - retrieve_bandwidth
+  - retrieve_live_bandwidth
+  - retrieve_historic_stats
 
 responses:
   utter_greet:
@@ -38,6 +39,7 @@ actions:
   - action_compare_terms
   - action_connect_to_api
   - action_retrieve_bandwidth
+  - action_retrieve_historic_data
 
 entities:
  - term

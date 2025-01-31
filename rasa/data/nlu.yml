@@ -112,7 +112,7 @@ nlu:
     - I want to connect to the API
     - Please link with the API
 
-- intent: retrieve_bandwidth
+- intent: retrieve_live_bandwidth
   examples: |
     - What is using up the most bandwidth?
     - What device is using the most bandwidth?
@@ -121,3 +121,15 @@ nlu:
     - What is using up the internet speed currently?
     - Who is using up all the internet?
     - Who is using so much bandwidth?
+
+- intent: retrieve_historic_stats
+  examples: |
+    - What has used the most bandwidth?
+    - What has been using up my bandwidth?
+    - What devices have been using the most bandwidth?
+    - What has used the most bandwidth over time?
+    - What devices have been using the most bandwidth historically?
+    - Show me the bandwidth usage history.
+    - How much bandwidth have my devices been using?
+    - How much bandwidth have we used recently?
+    - What was the bandwidth usage like recently?

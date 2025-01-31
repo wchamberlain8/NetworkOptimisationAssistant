@@ -36,6 +36,8 @@ class Controller(RyuApp):
         super(Controller, self).__init__(*args, **kwargs)
         self.stats_data = None
         self.stats_data_event = threading.Event()
+        self.live_request = None
+        self.lock = threading.Lock()
        
 
     def start_socket_server(self, datapath):
@@ -75,7 +77,7 @@ class Controller(RyuApp):
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
         self.logger.info("Handshake taken place with {}".format(dpid_to_str(datapath.id)))
         self.__add_flow(datapath, 0, match, actions)
-        #self.request_stats_periodically(datapath)
+        self.request_stats_periodically(datapath)
         threading.Thread(target=self.start_socket_server, args=(datapath,), daemon=True).start()
 
 
@@ -173,30 +175,23 @@ class Controller(RyuApp):
 
 
 
-    #The below functions are for the future, to be used for the historic bandwidth stats
+    #Periodically request + post flow stats to the API to keep a record of bandwidth usage
 
-    # def request_stats_periodically(self, datapath):
-    #     self.request_flow_stats(datapath)
-    #     #TODO: need to add something here to send the response to the correct API endpoint 
+    def request_stats_periodically(self, datapath):
+
+        with self.lock:
+            self.live_request = False
+
+        parser = datapath.ofproto_parser
+        request = parser.OFPFlowStatsRequest(datapath)
+        datapath.send_msg(request)
         
-    #     payload = {}
-    #     self.logger.info(f"Payload being sent: {payload}")
+        threading.Timer(20, self.request_stats_periodically, args=[datapath]).start()
 
-    #     try:
-    #         response = requests.post("http://127.0.0.1:8000/update_stats", json=payload)
-    #     except requests.exceptions.RequestException as e:
-    #         print(f"Error sending data: {e}")
 
    
 
-    #     threading.Timer(20, self.request_stats_periodically, args=[datapath]).start()
 
-
-    # def request_flow_stats(self, datapath):
-    #     #Request flow stats from the switch
-    #     parser = datapath.ofproto_parser
-    #     request = parser.OFPFlowStatsRequest(datapath)
-    #     datapath.send_msg(request)
 
 
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
@@ -216,11 +211,22 @@ class Controller(RyuApp):
                 "duration_sec": stat.duration_sec
             })
 
-        self.logger.info(f"INSIDE HANDLER: Stats = {stats}")
+        with self.lock:
+            if self.live_request:
+                self.logger.info("Inside lock, getting live stats now!")
+                self.stats_data = stats
+                self.stats_data_event.set()
+            else:
+                payload = {"stats": stats}
+                self.logger.info(f"Payload being sent: {payload}")
 
-        #need to send the stats back to the request_live_stats function
-        self.stats_data = stats
-        self.stats_data_event.set()
+                try:
+                    response = requests.post("http://127.0.0.1:8000/update_historical_stats", json=payload)
+                except requests.exceptions.RequestException as e:
+                    print(f"Error sending historical data: {e}")
+
+
+
     
     
     def request_live_stats(self, datapath):
@@ -228,23 +234,26 @@ class Controller(RyuApp):
 
         self.logger.info("Starting the process to get and send live stats...")
 
-        parser = datapath.ofproto_parser
-        request = parser.OFPFlowStatsRequest(datapath)
-        
-        stats1 = []
-        stats2 = []
-        
-        datapath.send_msg(request) #send a request for the first set of stats
-        self.stats_data_event.wait()
-        stats1 = self.stats_data
-        self.stats_data_event.clear()
+        with self.lock:
+            self.live_request = True
 
-        sleep(1) #wait a second
+            parser = datapath.ofproto_parser
+            request = parser.OFPFlowStatsRequest(datapath)
+            
+            stats1 = []
+            stats2 = []
+            
+            datapath.send_msg(request) #send a request for the first set of stats
+            self.stats_data_event.wait()
+            stats1 = self.stats_data
+            self.stats_data_event.clear()
 
-        datapath.send_msg(request) #send another request for the second set of stats
-        self.stats_data_event.wait()
-        stats2 = self.stats_data
-        self.stats_data_event.clear()
+            sleep(1) #wait a second
+
+            datapath.send_msg(request) #send another request for the second set of stats
+            self.stats_data_event.wait()
+            stats2 = self.stats_data
+            self.stats_data_event.clear()
 
         self.logger.info("Live stats received, sending to API...")
 
