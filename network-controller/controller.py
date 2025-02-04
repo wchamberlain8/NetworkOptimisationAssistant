@@ -75,12 +75,29 @@ class Controller(RyuApp):
         parser = datapath.ofproto_parser
         match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
+
+        self.request_ports(datapath)
+
         self.logger.info("Handshake taken place with {}".format(dpid_to_str(datapath.id)))
         self.__add_flow(datapath, 0, match, actions)
         self.request_stats_periodically(datapath)
         threading.Thread(target=self.start_socket_server, args=(datapath,), daemon=True).start()
 
 
+    def request_ports(self, datapath):
+        ofproto = datapath.ofproto
+        parser = datapath.ofproto_parser
+        request = parser.OFPPortDescStatsRequest(datapath, 0)
+        datapath.send_msg(request)
+
+    @set_ev_cls(ofp_event.EventOFPPortDescStatsReply, MAIN_DISPATCHER)
+    def port_description_handler(self, ev):
+
+        datapath = ev.msg.datapath
+        for port in ev.msg.body:
+            if port.port_no == 4294967294:
+                continue
+            self.logger.info(f"Datapath {datapath} Port {port.port_no}: {port.name}")
 
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)

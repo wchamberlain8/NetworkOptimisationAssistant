@@ -93,10 +93,17 @@ nlu:
 - intent: ask_for_explanation
   examples: |
     - What is [broadband](term)?
+    - What is [HTTP](term)?
+    - What is a [megabit](term)?
+    - What does a [VPN](term) do?
+    - What is the point of a [router](term)?
     - Explain [bandwidth](term)
     - Can you explain what [ethernet](term) is?
     - Define [NAT](term) for me
     - Can you tell me what [WiFi](term) is?
+    - Define [port forwarding](term)
+    - Explain what [DNS](term) is
+    - Define what a [LAN](term) is?
 
 - intent: ask_for_comparison
   examples: |

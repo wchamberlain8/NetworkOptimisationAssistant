@@ -18,6 +18,11 @@ responses:
   utter_greet:
   - text: "Hey! How are you?"
 
+  utter_welcome:
+  - text: "🤖 Hi, I'm NOAH, a virtual assistant to help you with your home network! \
+     Type 'help' if you ever need help using me, or to see what functionality is available.
+     \nWhat can I help you with today? 🚀"
+
   utter_cheer_up:
   - text: "Here is something to cheer you up:"
     image: "https://i.imgur.com/nGF1K8f.jpg"

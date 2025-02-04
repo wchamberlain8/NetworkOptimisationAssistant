@@ -67,6 +67,7 @@ async def get_historic_stats():
         stats = {
             "src_mac": src_mac,
             "overall_byte_count": format_bytes(byte_count)
+            #"duration_sec": TODO: MAKE IT SO EACH DEVICE ALSO TRACKS HOW LONG THAT FLOW HAS BEEN LIVE INCASE IT GETS REMOVED etc.
         }
         stats_list.append(stats)
 
@@ -78,6 +79,7 @@ async def get_historic_stats():
 
     return payload
 
+#helper function
 def format_bytes(bytes):
     if bytes >= 1_000_000_000:
         return f"{round(bytes / 1_000_000_000, 2)} GB"
