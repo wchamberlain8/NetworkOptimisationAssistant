@@ -90,6 +90,25 @@ nlu:
     - am I talking to a bot?
     - am I talking to a human?
 
+- intent: ask_for_help
+  examples: |
+    - help
+    - i need help
+    - please help
+    - what can i do
+    - what can i ask
+    - what can you do?
+    - i'm stuck
+    - i'm having trouble
+    - i require assistance
+    - could you give me a hand?
+    - can you help me with something?
+    - i'm not sure what to do
+    - i'm lost
+    - i need some guidance
+    - i'm confused
+    - i don't understand
+
 - intent: ask_for_explanation
   examples: |
     - What is [broadband](term)?

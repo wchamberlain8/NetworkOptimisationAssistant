@@ -8,6 +8,7 @@ intents:
   - mood_great
   - mood_unhappy
   - bot_challenge
+  - ask_for_help
   - ask_for_explanation
   - ask_for_comparison
   - connect_to_api
@@ -29,6 +30,20 @@ responses:
 
   utter_did_that_help:
   - text: "Did that help you?"
+
+  utter_help:
+  - text: "I'm NOAH, a virtual assistant here to help you with your home network! \n
+      Here are the main features I provide, and some example usage... \n
+      • Monitor Live Bandwidth - see the current top consumer of bandwidth \n\n
+        ○ Example usage - 'What is using the most bandwidth currently?' \n
+      • Preview Historic Bandwidth Usage - see what devices have used the most bandwidth recently \n\n
+        ○ Example usage - 'What has used the most bandwidth recently?' \n
+      • Throttle A Device \n\n
+        ○ Example usage - 'Throttle the Smart TV' \n
+      • Guest/Unknown Device Detection \n\n
+        ○ Example usage - 'What has connected to the network recently?' \n
+      • Educational Capabilities - you can ask for definitions or comparisons between common networking terms \n\n
+        ○ Example usage - 'What is bandwidth?', 'What is the difference between LAN and WAN?' \n"
 
   utter_happy:
   - text: "Great, carry on!"

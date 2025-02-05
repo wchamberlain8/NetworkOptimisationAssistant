@@ -17,3 +17,8 @@ rules:
   steps:
     - intent: greet
     - action: utter_welcome
+
+- rule: help user
+  steps:
+   - intent: ask_for_help
+   - action: utter_help
