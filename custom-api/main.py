@@ -10,6 +10,17 @@ bandwidth_stats = {}
 historical_stats = {}
 top_consumer_cache = asyncio.Queue()
 
+#Hardcoded dictionary to hold the MAC address to hostname translations
+mac_to_hostname = {
+    "00:00:00:00:00:01": "Laptop",
+    "00:00:00:00:00:02": "Smart TV",
+    "00:00:00:00:00:03": "Ring Doorbell",
+    "00:00:00:00:00:04": "XBOX",
+    "00:00:00:00:00:05": "Gaming PC"
+}
+
+hostname_to_mac = {v: k for k, v in mac_to_hostname.items()} #reverse dict for faster lookup, might need to change if we add in custom hostname naming through rasa!!
+
 #data model if we want to pass some data to the API
 class InputModel(BaseModel):
     input_value: str
@@ -22,8 +33,34 @@ async def test(input: InputModel):
     return {"message": "Invalid input provided."}
 
 
+#--------------------------------------------------------------------------------------------------------------------
+#/mac_translation - Used for translating a MAC address to a hostname, or vice versa
+#--------------------------------------------------------------------------------------------------------------------
+@app.post("/mac_translation")
+async def mac_translation(input: InputModel):
 
-#api endpoint for bandwidth stats
+    #if input == a mac address, find the relevant hostname translation, if not, return "Unknown"
+    str = input.input_value
+    
+    if mac_address_check(str):
+        hostname = mac_to_hostname.get(str)
+        if hostname: #if there is a correlated hostname to that mac
+            return {"mac": str, "hostname": hostname}
+        else:
+            return {"mac": str, "hostname": "Unknown Device"}
+        
+    #else, if input == a hostname, try and find the relevant mac address translation, if not, return None
+    else:
+        mac_address = hostname_to_mac.get(str)
+        if mac_address:
+            return {"mac": mac_address, "hostname": str}
+        else:
+            return {"mac": None, "hostname": str}
+     
+
+#--------------------------------------------------------------------------------------------------------------------
+#/update_historical_stats - Used by the network controller to keep a consistent record of past bandwidth usage
+#--------------------------------------------------------------------------------------------------------------------
 @app.post("/update_historical_stats")
 async def update_historical_stats(data: dict):
     global historical_stats
@@ -32,8 +69,9 @@ async def update_historical_stats(data: dict):
     if stats:
         historical_stats = stats
 
-
-#api endpoint for getting the past x minutes of bandwidth information
+#--------------------------------------------------------------------------------------------------------------------
+#/get_historic_stats - Used to retrieve the historic bandwidth usage data as well as network uptime
+#--------------------------------------------------------------------------------------------------------------------
 @app.get("/get_historic_stats")
 async def get_historic_stats():
     global historical_stats
@@ -79,18 +117,9 @@ async def get_historic_stats():
 
     return payload
 
-#helper function
-def format_bytes(bytes):
-    if bytes >= 1_000_000_000:
-        return f"{round(bytes / 1_000_000_000, 2)} GB"
-    elif bytes >= 1_000_000:
-        return f"{round(bytes / 1_000_000, 2)} MB"
-    elif bytes >= 1_000:
-        return f"{round(bytes / 1_000, 2)} KB"
-    else:
-        return f"{bytes} B"
-
-#api endpoint for Rasa to request live stats
+#--------------------------------------------------------------------------------------------------------------------
+#/get_live_stats - Used to request live stats from the network controller and returns them upon completion 
+#--------------------------------------------------------------------------------------------------------------------
 @app.get("/get_live_stats")
 async def get_live_stats():
     global top_consumer_cache
@@ -111,8 +140,9 @@ async def get_live_stats():
         return {"message": "Timeout: The API did not receive stats from the controller in time"}
 
 
-
-#api endpoint for retrieving and deciphering live flow stats to find top LIVE consumer
+#--------------------------------------------------------------------------------------------------------------------
+#/send_live_stats - Used for retrieving and structuring live flow stats to find the top live consumer and set a flag
+#--------------------------------------------------------------------------------------------------------------------
 @app.post("/send_live_stats")
 async def send_live_stats(data: dict):
     global top_consumer_cache
@@ -160,3 +190,33 @@ async def send_live_stats(data: dict):
             print(f"Error calculating top consumer: {e}")
     else:
         print("***** There is currently nothing using bandwidth *****\n")
+
+
+#*****************************************
+#           Helper Functions
+#*****************************************
+
+def mac_address_check(mac):
+    if ":" in mac:
+        parts = mac.split(":")
+    else: 
+        return False
+    
+    if len(parts) != 6:
+           return False
+        
+    for part in parts:
+        if len(part) != 2:
+            return False
+        
+    return True
+
+def format_bytes(bytes):
+    if bytes >= 1_000_000_000:
+        return f"{round(bytes / 1_000_000_000, 2)} GB"
+    elif bytes >= 1_000_000:
+        return f"{round(bytes / 1_000_000, 2)} MB"
+    elif bytes >= 1_000:
+        return f"{round(bytes / 1_000, 2)} KB"
+    else:
+        return f"{bytes} B"

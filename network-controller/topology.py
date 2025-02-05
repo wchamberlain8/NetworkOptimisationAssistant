@@ -21,12 +21,12 @@ class TutorialTopology(Topo):
 
         # Connect h2, h3, h4 to the switch
         for h in range(2, 5):
-            host = self.addHost(f'h{h}')
+            host = self.addHost(f'h{h}', mac=f'00:00:00:00:00:0{h}')
             self.addLink(s1, host, cls=TCLink, bw=40, delay='15ms')
 
         # Add additional hosts and links (with greater bandwidth)
-        h1 = self.addHost('h1')
-        h5 = self.addHost('h5')
+        h1 = self.addHost('h1', mac=f'00:00:00:00:00:01')
+        h5 = self.addHost('h5', mac=f'00:00:00:00:00:05')
         self.addLink(s1, h1, cls=TCLink, bw=80, delay='15ms')
         self.addLink(s1, h5, cls=TCLink, bw=80, delay='15ms')
 

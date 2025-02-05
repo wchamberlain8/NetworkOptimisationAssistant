@@ -1,9 +1,3 @@
-# This files contains your custom actions which can be used to run
-# custom Python code.
-#
-# See this guide on how to implement these action:
-# https://rasa.com/docs/rasa/custom-actions
-
 import time
 import requests
 
@@ -11,27 +5,12 @@ from typing import Any, Text, Dict, List
 
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
-#from resource_bank import TERM_DICTIONARY, COMPARISON_DICTIONARY
 import resource_bank
-import resource_bank.data
 
 TERM_DICTIONARY = resource_bank.TERM_DICTIONARY
 COMPARISON_DICTIONARY = resource_bank.COMPARISON_DICTIONARY
 
-# TERM_DICTIONARY = {
-#     "broadband": "Broadband is blah blah blah",
-#     "bandwidth": "Bandwidth is the maximum rate of data transfer across a network",
-#     "ethernet": "Ethernet is a wired connection that is faster and less susceptible to interference",
-#     "wifi" : "Wi-Fi is a wireless connection that is very convenient but can be slower and less reliable due to interference or signal loss.",
-#     #ADD MORE, LOTS MORE HERE
-# }
-
-# COMPARISON_DICTIONARY = {
-#     "bandwidthbroadband": "Bandwidth is the maximum rate of data transfer across a network, whereas broadband is a high-speed internet connection that is always on.",
-#     "ethernetwifi": "Ethernet is a wired connection that is faster and more reliable than Wi-Fi, which is a wireless connection that is more convenient but slower.",
-#     #ADD MORE, LOTS MORE HERE
-# }
-
+#Test action
 class ActionHelloWorld(Action):
 
     def name(self) -> Text:
@@ -44,48 +23,7 @@ class ActionHelloWorld(Action):
         dispatcher.utter_message(text="Hello World!")
 
         return []
-    
 
-class ActionExplainTerms(Action):
-    
-    def name(self) -> Text:
-        return "action_explain_terms"
-    
-    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        
-        term = tracker.get_slot("term")
-        print("Inside ActionExplainTerms")
-
-        if term:
-            explanation = TERM_DICTIONARY.get(term.lower(), "Sorry, I don't know what that is.")
-            dispatcher.utter_message(text=explanation)
-        else:
-            dispatcher.utter_message(text="Please provide a networking term you would like explaining.")
-
-        return []
-    
-
-
-    
-class ActionCompareTerms(Action):
-    
-    def name(self) -> Text:
-        return "action_compare_terms"
-    
-    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
-        
-        term1 = tracker.get_slot("comparison_term1")
-        term2 = tracker.get_slot("comparison_term2")
-
-        if term1 and term2:
-            key = "".join(sorted([term1.lower(), term2.lower()]))
-            explanation = COMPARISON_DICTIONARY.get(key, "Sorry, I can't compare those two terms.")
-            dispatcher.utter_message(text=explanation)
-        else:
-            dispatcher.utter_message(text="Please provide two networking terms you would like to be compared.")
-
-        return []
-    
 #Test action that can help debug if the API is working/if Rasa can connect to it
 class ActionConnectToAPI(Action):
 
@@ -112,8 +50,55 @@ class ActionConnectToAPI(Action):
         dispatcher.utter_message(text=message)
 
         return []
+    
 
-#Action to retrieve the current top consumer of bandwidth on a network 
+#--------------------------------------------------------------------------------------------------------------------
+#ActionExplainTerms - Used to return a definition of a user inputted term using the external dictionaries as a source
+#--------------------------------------------------------------------------------------------------------------------
+class ActionExplainTerms(Action):
+    
+    def name(self) -> Text:
+        return "action_explain_terms"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        term = tracker.get_slot("term")
+
+        if term:
+            explanation = TERM_DICTIONARY.get(term.lower(), "Sorry, I don't know what that is.")
+            dispatcher.utter_message(text=explanation)
+        else:
+            dispatcher.utter_message(text="Please provide a networking term you would like explaining.")
+
+        return []
+    
+
+#--------------------------------------------------------------------------------------------------------------------
+#ActionCompareTerms - Used to return a comparison/definitions of two user inputted terms using the external dictionaries as a source
+#--------------------------------------------------------------------------------------------------------------------
+class ActionCompareTerms(Action):
+    
+    def name(self) -> Text:
+        return "action_compare_terms"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        term1 = tracker.get_slot("comparison_term1")
+        term2 = tracker.get_slot("comparison_term2")
+
+        if term1 and term2:
+            key = "".join(sorted([term1.lower(), term2.lower()]))
+            explanation = COMPARISON_DICTIONARY.get(key, "Sorry, I can't compare those two terms.")
+            dispatcher.utter_message(text=explanation)
+        else:
+            dispatcher.utter_message(text="Please provide two networking terms you would like to be compared.")
+
+        return []
+    
+
+#--------------------------------------------------------------------------------------------------------------------
+#ActionRetrieveBandwidth - Used to return the current top consumer of bandwidth on the network
+#--------------------------------------------------------------------------------------------------------------------
 class ActionRetrieveBandwidth(Action):
 
     def name (self) -> Text:
@@ -149,7 +134,11 @@ class ActionRetrieveBandwidth(Action):
 
         dispatcher.utter_message(text=message)
         return []
-    
+
+
+#--------------------------------------------------------------------------------------------------------------------
+#ActionRetrieveHistoricBandwidth - Used to return a list of all past devices that have used bandwidth (and how much) on the network
+#--------------------------------------------------------------------------------------------------------------------
 class ActionRetrieveHistoricBandwidth(Action):
 
     def name (self) -> Text:
