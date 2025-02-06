@@ -122,7 +122,9 @@ class ActionRetrieveBandwidth(Action):
                 if top_consumer:
                     endTime = time.time()
                     elapsedTime = endTime - startTime
-                    message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['total_bandwidth']:.2f} Mbps. Operation took {elapsedTime:.3f} seconds." #Added in a time record for performance checking
+                    mac, hostname = mac_translation(top_consumer['src_mac'])
+                    message = f"The top consumer is {hostname} (MAC: {mac}) using {top_consumer['total_bandwidth']:.2f} Mbps. Operation took {elapsedTime:.3f} seconds." #Added in a time record for performance checking
+                    #message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['total_bandwidth']:.2f} Mbps. Operation took {elapsedTime:.3f} seconds." #Added in a time record for performance checking
                 elif timeoutMessage:
                     message = timeoutMessage
                 else:
@@ -156,12 +158,13 @@ class ActionRetrieveHistoricBandwidth(Action):
                 #extract the data
 
                 uptime = data["uptime"]
-                message = f"Network has been online for {uptime}. Here's the usage data in that time:\n"
+                message = f"🌐 Network has been online for {uptime}. Here's the usage data in that time:\n"
 
                 for device in data["stats"]:
-                    src_mac = device["src_mac"]
+                    #src_mac = device["src_mac"]
+                    mac, hostname = mac_translation(device["src_mac"])
                     byte_count = device["overall_byte_count"]
-                    message = message + f"• Device {src_mac} has used {byte_count}\n"
+                    message = message + f"• Device {hostname} (MAC: {mac}) has used {byte_count}\n"
 
             else:
                 message = f"Error: Recieved {response.status_code} from the API"
@@ -170,3 +173,28 @@ class ActionRetrieveHistoricBandwidth(Action):
 
         dispatcher.utter_message(text=message)
         return []
+
+
+def mac_translation(input_str):
+    
+    url = "http://127.0.0.1:8000/mac_translation"
+
+    input_value = input_str
+
+    try:
+        response = requests.post(url, json={"input_value": input_value})
+        
+        if response.status_code == 200:
+            response_data = response.json() 
+            mac = response_data.get("mac")
+            hostname = response_data.get("hostname")
+        else:
+            print(f"Error: Received {response.status_code} from the API.")
+            return None
+
+    except Exception as e:
+        print(f"API call failed: {str(e)}")
+        return None
+
+    return mac, hostname
+    
