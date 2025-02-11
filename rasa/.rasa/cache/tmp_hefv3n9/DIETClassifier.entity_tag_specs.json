@@ -1,0 +1,44 @@
+[
+  {
+    "tag_name": "entity",
+    "ids_to_tags": {
+      "1": "B-comparison_term1",
+      "2": "I-comparison_term1",
+      "3": "L-comparison_term1",
+      "4": "U-comparison_term1",
+      "5": "B-comparison_term2",
+      "6": "I-comparison_term2",
+      "7": "L-comparison_term2",
+      "8": "U-comparison_term2",
+      "9": "B-device",
+      "10": "I-device",
+      "11": "L-device",
+      "12": "U-device",
+      "13": "B-term",
+      "14": "I-term",
+      "15": "L-term",
+      "16": "U-term",
+      "0": "O"
+    },
+    "tags_to_ids": {
+      "B-comparison_term1": 1,
+      "I-comparison_term1": 2,
+      "L-comparison_term1": 3,
+      "U-comparison_term1": 4,
+      "B-comparison_term2": 5,
+      "I-comparison_term2": 6,
+      "L-comparison_term2": 7,
+      "U-comparison_term2": 8,
+      "B-device": 9,
+      "I-device": 10,
+      "L-device": 11,
+      "U-device": 12,
+      "B-term": 13,
+      "I-term": 14,
+      "L-term": 15,
+      "U-term": 16,
+      "O": 0
+    },
+    "num_tags": 17
+  }
+]

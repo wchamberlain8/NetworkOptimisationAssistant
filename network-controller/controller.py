@@ -40,7 +40,6 @@ class Controller(RyuApp):
         self.live_request = None
         self.lock = threading.Lock()
         self.ports = {}
-       
 
     def start_socket_server(self, datapath):
         #Start a socket server to receive data from the API
@@ -52,15 +51,22 @@ class Controller(RyuApp):
             connection, address = s.accept()
             with connection:
                 print(f"Connected to {address}")
-                data = connection.recv(1024)
+                data = connection.recv(1024).decode("utf-8")
                 if data:
-                    command = data.decode("utf-8")
-                    if command == "get_live_stats":
-                        self.request_live_stats(datapath)
-                    else:
-                        print("Invalid command received from socket.")
-
-
+                    try:
+                        if "=" in data:
+                            command, mac = data.split("=")
+                            if command == "throttle_device":
+                                self.logger.info(f"Attempting to throttle device {mac}")
+                                self.throttle_device(datapath, mac)
+                            else:
+                                print("Invalid command received from socket.")
+                        elif data == "get_live_stats":
+                            self.request_live_stats(datapath)
+                        else:
+                            print("Invalid command received from socket.")
+                    except Exception as e:
+                        print(f"Error processing command: {e}")
 
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
@@ -228,7 +234,7 @@ class Controller(RyuApp):
         stats = []
 
         for stat in body:
-            flow_id = stat.match.get("eth_src", "0") + stat.match.get("eth_dst", "0") #TODO: improve this in future, make a hash function
+            flow_id = stat.match.get("eth_src", "N/A") + stat.match.get("eth_dst", "N/A") #TODO: improve this in future, make a hash function
             stats.append({
                 "flow_id": flow_id,
                 "src_mac": stat.match.get("eth_src", "N/A"),
@@ -258,10 +264,6 @@ class Controller(RyuApp):
     
     def request_live_stats(self, datapath):
         #Upon communication from the API, get the live flow stats (two sets, a second apart) and send them to the API
-
-        self.logger.info("Starting to throttle device h5 now...")
-        self.logger.info(f"{self.mac_to_port}")
-        self.throttle_device(datapath, "00:00:00:00:00:05")
 
         self.logger.info("Starting the process to get and send live stats...")
 
@@ -324,11 +326,10 @@ class Controller(RyuApp):
         subprocess.run([
             "sudo", "ovs-vsctl", "set", "Port", port_name, f"qos=@qos{port_name}", "--", f"--id=@qos{port_name}", "create", "QoS", "type=linux-htb", "other-config:max-rate=100000000",  # Set an overall max rate (100Mbps for safety)
             "queues:0=@default", "queues:1=@throttled", "queues:2=@priority",  # Assign three queues
-            "--", "--id=@default", "create", "Queue", "other-config:max-rate=0",  # Default (Unrestricted)
-            "--", "--id=@throttled", "create", "Queue", "other-config:max-rate=10000000",  # Throttled (10Mbps)
+            "--", "--id=@default", "create", "Queue", "other-config:max-rate=100000000",  # Default (Unrestricted)
+            "--", "--id=@throttled", "create", "Queue", "other-config:max-rate=10000000", "other-config:max-rate=1000000",  # Throttled (10Mbps)
             "--", "--id=@priority", "create", "Queue", "other-config:max-rate=50000000", "other-config:priority=10"  # Priority (50Mbps, highest priority)
-        ])
-        #stdout=subprocess.DEVNULL
+        ], stdout=subprocess.DEVNULL)
 
 
 
@@ -351,14 +352,14 @@ class Controller(RyuApp):
 
         try:
             match = parser.OFPMatch(eth_dst=dst_mac)
-            mod_delete = parser.OFPFlowMod(datapath=datapath, command=ofproto.OFPFC_DELETE, out_port=ofproto.OFPP_ANY, out_group=ofproto.OFPG_ANY, match=match)
-            datapath.send_msg(mod_delete)
+            #mod_delete = parser.OFPFlowMod(datapath=datapath, command=ofproto.OFPFC_DELETE, out_port=ofproto.OFPP_ANY, out_group=ofproto.OFPG_ANY, match=match)
+            #datapath.send_msg(mod_delete)
 
             actions = [parser.OFPActionSetQueue(queue_id=1)]
             inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
 
-            mod_addNew = parser.OFPFlowMod(datapath=datapath, match=match, instructions=inst, command=ofproto.OFPFC_ADD)
-            datapath.send_msg(mod_addNew)
+            mod = parser.OFPFlowMod(datapath=datapath, match=match, instructions=inst, command=ofproto.OFPFC_MODIFY) # IS MODIFY RIGHT? SHOULD IT BE ADD INSTEAD?
+            datapath.send_msg(mod)
 
             self.logger.info(f"Throttling rule successfully added for {dst_mac}")
 

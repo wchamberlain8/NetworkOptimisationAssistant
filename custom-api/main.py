@@ -192,6 +192,46 @@ async def send_live_stats(data: dict):
         print("***** There is currently nothing using bandwidth *****\n")
 
 
+#--------------------------------------------------------------------------------------------------------------------
+#/throttle_device - Used for throttling a specific device on the network
+#--------------------------------------------------------------------------------------------------------------------
+@app.post("/throttle_device")
+async def throttle_device(json: dict):
+
+    device = json.get("device")
+
+    print(f"Device: {device}")
+    print(f"Data: {json}")
+
+    if device:
+
+        #figure out whether the user's input was a mac address or a hostname
+        if mac_address_check(device):
+            mac = device
+            print("MAC ADDRESS DETECTED: ", mac)
+        else:
+            print("HOSTNAME DETECTED: ", device)
+            mac = hostname_to_mac.get(device)
+            print("CONVERTED TO MAC: ", mac)
+            if not mac:
+                return {"message": "Unknown device"}
+        
+        #connect to the socket
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(("127.0.0.2", 9090))
+            message = f"throttle_device={mac}"
+            s.sendall(message.encode('utf-8'))
+            s.close()
+
+            return {"message": "success"}
+        except Exception as e:
+            print(f"Error connecting to the controller: {e}")
+    
+    else:
+        return {"message": "No device could be parsed from the JSON payload"}
+
+
 #*****************************************
 #           Helper Functions
 #*****************************************

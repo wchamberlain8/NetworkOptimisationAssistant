@@ -159,3 +159,15 @@ nlu:
     - How much bandwidth have my devices been using?
     - How much bandwidth have we used recently?
     - What was the bandwidth usage like recently?
+
+- intent: throttle_device
+  examples: |
+    - Can you slow down the internet for [Laptop](device)?
+    - Can you throttle the internet for [XBOX](device)?
+    - Can you limit the internet speed for [00:00:00:00:00:01](device)?
+    - Can you reduce the internet speed for [00:00:00:00:00:02](device)?
+    - Throttle the internet for [00:00:00:00:00:03](device)
+    - Throttle my [Smart TV](device)
+    - Please throttle my [Gaming PC](device)
+    - Limit the internet speed for [00:00:00:00:00:04](device)
+    - Throttle the [Gaming PC](device)

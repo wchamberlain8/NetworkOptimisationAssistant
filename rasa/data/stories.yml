@@ -39,3 +39,8 @@ stories:
   steps:
   - intent: retrieve_historic_stats
   - action: action_retrieve_historic_data
+
+- story: throttle device
+  steps:
+  - intent: throttle_device
+  - action: action_throttle_device

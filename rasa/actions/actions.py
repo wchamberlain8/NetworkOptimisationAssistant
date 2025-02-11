@@ -173,7 +173,44 @@ class ActionRetrieveHistoricBandwidth(Action):
 
         dispatcher.utter_message(text=message)
         return []
+    
 
+#--------------------------------------------------------------------------------------------------------------------
+#ActionThrottleDevice - Sends an input to the API to throttle a device's bandwidth
+#--------------------------------------------------------------------------------------------------------------------
+class ActionThrottleDevice(Action):
+
+    def name (self) -> Text:
+        return "action_throttle_device"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        url = "http://127.0.0.1:8000/throttle_device"
+
+        try:
+            device = tracker.get_slot("device")
+            response = requests.post(url, json={"device": device})
+
+            if response.status_code == 200:
+                if response.json().get("message"):
+                    if response.json().get("message") == "success":
+                        message = "Device has been throttled successfully. To stop it being throttled, simply ask me to 'Unthrottle (device name)'."
+                    else:
+                        message = response.json().get("message")
+                else:
+                    message = "Device could not be throttled. Please check the device name and try again. Alternatively, ask to view current devices to specify using MAC instead."
+            else:
+                message = f"Error: Received {response.status_code} from the API."
+        except Exception as e:
+            message = f"API call failed: {str(e)}"
+
+        dispatcher.utter_message(text=message)
+        return []
+
+
+#--------------------------------------------------------------------------------------------------------------------
+#Helper function which accesses the API to translate a MAC address to a hostname
+#--------------------------------------------------------------------------------------------------------------------
 
 def mac_translation(input_str):
     
