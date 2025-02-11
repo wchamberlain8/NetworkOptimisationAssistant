@@ -31,19 +31,41 @@ responses:
   utter_did_that_help:
   - text: "Did that help you?"
 
+  # utter_help:
+  # - text: "I'm NOAH, a virtual assistant here to help you with your home network! \n
+  #     Here are the main features I provide, and some example usage... \n
+  #     • Monitor Live Bandwidth - see the current top consumer of bandwidth \n\n
+  #       ○ Example usage - 'What is using the most bandwidth currently?' \n
+  #     • Preview Historic Bandwidth Usage - see what devices have used the most bandwidth recently \n\n
+  #       ○ Example usage - 'What has used the most bandwidth recently?' \n
+  #     • Throttle A Device \n\n
+  #       ○ Example usage - 'Throttle the Smart TV' \n
+  #     • Guest/Unknown Device Detection \n\n
+  #       ○ Example usage - 'What has connected to the network recently?' \n
+  #     • Educational Capabilities - you can ask for definitions or comparisons between common networking terms \n\n
+  #       ○ Example usage - 'What is bandwidth?', 'What is the difference between LAN and WAN?' \n"
+
   utter_help:
-  - text: "I'm NOAH, a virtual assistant here to help you with your home network! \n
-      Here are the main features I provide, and some example usage... \n
-      • Monitor Live Bandwidth - see the current top consumer of bandwidth \n\n
-        ○ Example usage - 'What is using the most bandwidth currently?' \n
-      • Preview Historic Bandwidth Usage - see what devices have used the most bandwidth recently \n\n
-        ○ Example usage - 'What has used the most bandwidth recently?' \n
-      • Throttle A Device \n\n
-        ○ Example usage - 'Throttle the Smart TV' \n
-      • Guest/Unknown Device Detection \n\n
-        ○ Example usage - 'What has connected to the network recently?' \n
-      • Educational Capabilities - you can ask for definitions or comparisons between common networking terms \n\n
-        ○ Example usage - 'What is bandwidth?', 'What is the difference between LAN and WAN?' \n"
+  - text: "I'm NOAH, a virtual assistant here to help you with your home network!"
+    elements:
+    - text: "Here are the main features I provide, and some example usage..."
+      type: "text" # Explicitly define the element type, even if it's just text
+    - text: |
+        * **Monitor Live Bandwidth** - see the current top consumer of bandwidth
+          * Example usage - 'What is using the most bandwidth currently?'
+
+        * **Preview Historic Bandwidth Usage** - see what devices have used the most bandwidth recently
+          * Example usage - 'What has used the most bandwidth recently?'
+
+        * **Throttle A Device**
+          * Example usage - 'Throttle the Smart TV'
+
+        * **Guest/Unknown Device Detection**
+          * Example usage - 'What has connected to the network recently?'
+
+        * **Educational Capabilities** - you can ask for definitions or comparisons between common networking terms
+          * Example usage - 'What is bandwidth?', 'What is the difference between LAN and WAN?'
+      type: "text" # Important: Mark this as a text element, even if it has markdown.
 
   utter_happy:
   - text: "Great, carry on!"

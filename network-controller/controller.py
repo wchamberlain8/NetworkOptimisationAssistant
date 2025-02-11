@@ -14,6 +14,7 @@ tutorial you should convert this to a layer 2 learning switch.
 See the README for more...
 """
 
+import subprocess
 from time import sleep
 from ryu.base.app_manager import RyuApp
 from ryu.controller import ofp_event
@@ -38,6 +39,7 @@ class Controller(RyuApp):
         self.stats_data_event = threading.Event()
         self.live_request = None
         self.lock = threading.Lock()
+        self.ports = {}
        
 
     def start_socket_server(self, datapath):
@@ -90,14 +92,22 @@ class Controller(RyuApp):
         request = parser.OFPPortDescStatsRequest(datapath, 0)
         datapath.send_msg(request)
 
+
+
+
+
     @set_ev_cls(ofp_event.EventOFPPortDescStatsReply, MAIN_DISPATCHER)
     def port_description_handler(self, ev):
 
         datapath = ev.msg.datapath
         for port in ev.msg.body:
-            if port.port_no == 4294967294:
+            if port.port_no == 4294967294: #ignore the special port
                 continue
-            self.logger.info(f"Datapath {datapath} Port {port.port_no}: {port.name}")
+            self.create_qos_queue(datapath.id, port.port_no)
+            self.logger.info(datapath.id)
+
+
+
 
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
@@ -154,7 +164,7 @@ class Controller(RyuApp):
             if a == False:
                 self.logger.info(f"MAC {dst_mac} unknown, flooding...")
 
-        actions = [parser.OFPActionOutput(out_port)]
+        actions = [parser.OFPActionOutput(out_port), parser.OFPActionSetQueue(queue_id=0)]
 
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
             data = msg.data 
@@ -249,6 +259,10 @@ class Controller(RyuApp):
     def request_live_stats(self, datapath):
         #Upon communication from the API, get the live flow stats (two sets, a second apart) and send them to the API
 
+        self.logger.info("Starting to throttle device h5 now...")
+        self.logger.info(f"{self.mac_to_port}")
+        self.throttle_device(datapath, "00:00:00:00:00:05")
+
         self.logger.info("Starting the process to get and send live stats...")
 
         with self.lock:
@@ -299,3 +313,55 @@ class Controller(RyuApp):
 
         with self.lock:
             self.live_request = False
+
+
+
+    def create_qos_queue(self, dpid, port_no):
+
+        port_name = f"s{dpid}-eth{port_no}"
+        self.logger.info(f"Port Name: {port_name}")
+
+        subprocess.run([
+            "sudo", "ovs-vsctl", "set", "Port", port_name, f"qos=@qos{port_name}", "--", f"--id=@qos{port_name}", "create", "QoS", "type=linux-htb", "other-config:max-rate=100000000",  # Set an overall max rate (100Mbps for safety)
+            "queues:0=@default", "queues:1=@throttled", "queues:2=@priority",  # Assign three queues
+            "--", "--id=@default", "create", "Queue", "other-config:max-rate=0",  # Default (Unrestricted)
+            "--", "--id=@throttled", "create", "Queue", "other-config:max-rate=10000000",  # Throttled (10Mbps)
+            "--", "--id=@priority", "create", "Queue", "other-config:max-rate=50000000", "other-config:priority=10"  # Priority (50Mbps, highest priority)
+        ])
+        #stdout=subprocess.DEVNULL
+
+
+
+
+    def throttle_device(self, datapath, dst_mac):
+        #Make an new flow rule to throttle a destination mac address
+        #So that we are telling the switch "If anything is destined for this mac address, send it via the throttled queue"
+        #Hence giving the throttling affect
+
+        dpid = datapath.id
+
+        port_no = self.mac_to_port[dpid].get(dst_mac)
+        if port_no is None:
+            self.logger.error(f"Port for MAC {dst_mac} not found in mac_to_port table.")
+            return
+
+        self.logger.info(f"Throttling {dst_mac} on port {port_no} of switch {dpid}")
+        parser = datapath.ofproto_parser
+        ofproto = datapath.ofproto
+
+        try:
+            match = parser.OFPMatch(eth_dst=dst_mac)
+            mod_delete = parser.OFPFlowMod(datapath=datapath, command=ofproto.OFPFC_DELETE, out_port=ofproto.OFPP_ANY, out_group=ofproto.OFPG_ANY, match=match)
+            datapath.send_msg(mod_delete)
+
+            actions = [parser.OFPActionSetQueue(queue_id=1)]
+            inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
+
+            mod_addNew = parser.OFPFlowMod(datapath=datapath, match=match, instructions=inst, command=ofproto.OFPFC_ADD)
+            datapath.send_msg(mod_addNew)
+
+            self.logger.info(f"Throttling rule successfully added for {dst_mac}")
+
+        except Exception as e:
+            print(f"Error throttling device: {e}")
+            return None        
