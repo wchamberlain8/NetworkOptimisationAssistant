@@ -41,6 +41,14 @@ class Controller(RyuApp):
         self.lock = threading.Lock()
         self.ports = {}
 
+        subprocess.run([
+            "sudo", "ovs-vsctl", "--all", "destroy", "QoS"
+        ])
+        
+        subprocess.run([
+            "sudo", "ovs-vsctl", "--all", "destroy", "Queue"
+        ])
+
     def start_socket_server(self, datapath):
         #Start a socket server to receive data from the API
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -91,6 +99,7 @@ class Controller(RyuApp):
         self.request_stats_periodically(datapath)
         threading.Thread(target=self.start_socket_server, args=(datapath,), daemon=True).start()
 
+        #ADD IN FLOW MOD CREATION HERE!!!
 
     def request_ports(self, datapath):
         ofproto = datapath.ofproto
@@ -170,7 +179,7 @@ class Controller(RyuApp):
             if a == False:
                 self.logger.info(f"MAC {dst_mac} unknown, flooding...")
 
-        actions = [parser.OFPActionOutput(out_port), parser.OFPActionSetQueue(queue_id=0)]
+        actions = [parser.OFPActionSetQueue(0), parser.OFPActionOutput(out_port)]
 
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
             data = msg.data 
@@ -180,6 +189,7 @@ class Controller(RyuApp):
         datapath.send_msg(out)
 
         #make a flow rule in the flow table
+        #remove this !!!
         if out_port != ofproto.OFPP_FLOOD:
             match = parser.OFPMatch(in_port=in_port, eth_src=src_mac, eth_dst=dst_mac)
             self.__add_flow(datapath, 1, match, actions)
@@ -324,12 +334,12 @@ class Controller(RyuApp):
         self.logger.info(f"Port Name: {port_name}")
 
         subprocess.run([
-            "sudo", "ovs-vsctl", "set", "Port", port_name, f"qos=@qos{port_name}", "--", f"--id=@qos{port_name}", "create", "QoS", "type=linux-htb", "other-config:max-rate=100000000",  # Set an overall max rate (100Mbps for safety)
-            "queues:0=@default", "queues:1=@throttled", "queues:2=@priority",  # Assign three queues
+            "sudo", "ovs-vsctl", "set", "Port", port_name, f"qos=@qos{port_name}", "--", f"--id=@qos{port_name}", "create", "QoS", "type=linux-htb", "other-config:max-rate=100000000",
+            "queues:0=@default", "queues:1=@throttled", "queues:2=@priority", 
             "--", "--id=@default", "create", "Queue", "other-config:max-rate=100000000",  # Default (Unrestricted)
-            "--", "--id=@throttled", "create", "Queue", "other-config:max-rate=10000000", "other-config:max-rate=1000000",  # Throttled (10Mbps)
+            "--", "--id=@throttled", "create", "Queue", "other-config:max-rate=10000000",  # Throttled (10Mbps)
             "--", "--id=@priority", "create", "Queue", "other-config:max-rate=50000000", "other-config:priority=10"  # Priority (50Mbps, highest priority)
-        ], stdout=subprocess.DEVNULL)
+        ]) #, stdout=subprocess.DEVNULL)
 
 
 
@@ -355,7 +365,9 @@ class Controller(RyuApp):
             #mod_delete = parser.OFPFlowMod(datapath=datapath, command=ofproto.OFPFC_DELETE, out_port=ofproto.OFPP_ANY, out_group=ofproto.OFPG_ANY, match=match)
             #datapath.send_msg(mod_delete)
 
-            actions = [parser.OFPActionSetQueue(queue_id=1)]
+
+            #OFPActionOutput first
+            actions = [parser.OFPActionSetQueue(1), parser.OFPActionOutput(port_no)]
             inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
 
             mod = parser.OFPFlowMod(datapath=datapath, match=match, instructions=inst, command=ofproto.OFPFC_MODIFY) # IS MODIFY RIGHT? SHOULD IT BE ADD INSTEAD?
