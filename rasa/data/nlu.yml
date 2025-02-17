@@ -90,13 +90,39 @@ nlu:
     - am I talking to a bot?
     - am I talking to a human?
 
+- intent: ask_for_help
+  examples: |
+    - help
+    - i need help
+    - please help
+    - what can i do
+    - what can i ask
+    - what can you do?
+    - i'm stuck
+    - i'm having trouble
+    - i require assistance
+    - could you give me a hand?
+    - can you help me with something?
+    - i'm not sure what to do
+    - i'm lost
+    - i need some guidance
+    - i'm confused
+    - i don't understand
+
 - intent: ask_for_explanation
   examples: |
     - What is [broadband](term)?
+    - What is [HTTP](term)?
+    - What is a [megabit](term)?
+    - What does a [VPN](term) do?
+    - What is the point of a [router](term)?
     - Explain [bandwidth](term)
     - Can you explain what [ethernet](term) is?
     - Define [NAT](term) for me
     - Can you tell me what [WiFi](term) is?
+    - Define [port forwarding](term)
+    - Explain what [DNS](term) is
+    - Define what a [LAN](term) is?
 
 - intent: ask_for_comparison
   examples: |
@@ -112,7 +138,7 @@ nlu:
     - I want to connect to the API
     - Please link with the API
 
-- intent: retrieve_bandwidth
+- intent: retrieve_live_bandwidth
   examples: |
     - What is using up the most bandwidth?
     - What device is using the most bandwidth?
@@ -121,3 +147,27 @@ nlu:
     - What is using up the internet speed currently?
     - Who is using up all the internet?
     - Who is using so much bandwidth?
+
+- intent: retrieve_historic_stats
+  examples: |
+    - What has used the most bandwidth?
+    - What has been using up my bandwidth?
+    - What devices have been using the most bandwidth?
+    - What has used the most bandwidth over time?
+    - What devices have been using the most bandwidth historically?
+    - Show me the bandwidth usage history.
+    - How much bandwidth have my devices been using?
+    - How much bandwidth have we used recently?
+    - What was the bandwidth usage like recently?
+
+- intent: throttle_device
+  examples: |
+    - Can you slow down the internet for [Laptop](device)?
+    - Can you throttle the internet for [XBOX](device)?
+    - Can you limit the internet speed for [00:00:00:00:00:01](device)?
+    - Can you reduce the internet speed for [00:00:00:00:00:02](device)?
+    - Throttle the internet for [00:00:00:00:00:03](device)
+    - Throttle my [Smart TV](device)
+    - Please throttle my [Gaming PC](device)
+    - Limit the internet speed for [00:00:00:00:00:04](device)
+    - Throttle the [Gaming PC](device)

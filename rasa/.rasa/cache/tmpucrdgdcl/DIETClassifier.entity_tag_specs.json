@@ -1,0 +1,36 @@
+[
+  {
+    "tag_name": "entity",
+    "ids_to_tags": {
+      "1": "B-comparison_term1",
+      "2": "I-comparison_term1",
+      "3": "L-comparison_term1",
+      "4": "U-comparison_term1",
+      "5": "B-comparison_term2",
+      "6": "I-comparison_term2",
+      "7": "L-comparison_term2",
+      "8": "U-comparison_term2",
+      "9": "B-term",
+      "10": "I-term",
+      "11": "L-term",
+      "12": "U-term",
+      "0": "O"
+    },
+    "tags_to_ids": {
+      "B-comparison_term1": 1,
+      "I-comparison_term1": 2,
+      "L-comparison_term1": 3,
+      "U-comparison_term1": 4,
+      "B-comparison_term2": 5,
+      "I-comparison_term2": 6,
+      "L-comparison_term2": 7,
+      "U-comparison_term2": 8,
+      "B-term": 9,
+      "I-term": 10,
+      "L-term": 11,
+      "U-term": 12,
+      "O": 0
+    },
+    "num_tags": 13
+  }
+]

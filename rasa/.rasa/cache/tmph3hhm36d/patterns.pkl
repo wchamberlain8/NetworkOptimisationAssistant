@@ -1,0 +1,6 @@
+[
+  {
+    "name": "term",
+    "pattern": "(\\bbroadband\\b|\\bbandwidth\\b)"
+  }
+]

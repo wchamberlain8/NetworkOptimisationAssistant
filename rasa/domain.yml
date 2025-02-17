@@ -8,14 +8,22 @@ intents:
   - mood_great
   - mood_unhappy
   - bot_challenge
+  - ask_for_help
   - ask_for_explanation
   - ask_for_comparison
   - connect_to_api
-  - retrieve_bandwidth
+  - retrieve_live_bandwidth
+  - retrieve_historic_stats
+  - throttle_device
 
 responses:
   utter_greet:
   - text: "Hey! How are you?"
+
+  utter_welcome:
+  - text: "🤖 Hi, I'm NOAH, a virtual assistant to help you with your home network! \
+     Type 'help' if you ever need help using me, or to see what functionality is available.
+     \nWhat can I help you with today? 🚀"
 
   utter_cheer_up:
   - text: "Here is something to cheer you up:"
@@ -23,6 +31,20 @@ responses:
 
   utter_did_that_help:
   - text: "Did that help you?"
+
+  utter_help:
+  - text: "I'm NOAH, a virtual assistant here to help you with your home network! \n
+      Here are the main features I provide, and some example usage... \n
+      • Monitor Live Bandwidth - see the current top consumer of bandwidth \n
+      \t ○ Example usage - 'What is using the most bandwidth currently?' \n
+      • Preview Historic Bandwidth Usage - see what devices have used the most bandwidth recently \n
+      \t ○ Example usage - 'What has used the most bandwidth recently?' \n
+      • Throttle A Device \n
+      \t ○ Example usage - 'Throttle the Smart TV' \n
+      • Guest/Unknown Device Detection \n
+      \t ○ Example usage - 'What has connected to the network recently?' \n
+      • Educational Capabilities - you can ask for definitions or comparisons between common networking terms \n
+      \t ○ Example usage - 'What is bandwidth?', 'What is the difference between LAN and WAN?' \n"
 
   utter_happy:
   - text: "Great, carry on!"
@@ -38,11 +60,14 @@ actions:
   - action_compare_terms
   - action_connect_to_api
   - action_retrieve_bandwidth
+  - action_retrieve_historic_data
+  - action_throttle_device
 
 entities:
  - term
  - comparison_term1
  - comparison_term2
+ - device
 
 slots:
   term:
@@ -63,6 +88,11 @@ slots:
       - type: from_entity
         entity: comparison_term2
 
+  device:
+    type: text
+    mappings:
+      - type: from_entity
+        entity: device
 
 session_config:
   session_expiration_time: 60

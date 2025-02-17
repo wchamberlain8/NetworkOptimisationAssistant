@@ -16,7 +16,7 @@ tmux send-keys -t $SESSION_NAME:0.1 "source /home/chambe28/typvenv/bin/activate 
 
 # Network processes - Mininet and Ryu Controller
 tmux new-window -t $SESSION_NAME -n "Network"
-tmux send-keys -t $SESSION_NAME:1 "source /home/chambe28/typvenv/bin/activate && cd network-controller && sudo mn --switch ovsk --controller remote --custom ./topology.py --topo testTopology" C-m
+tmux send-keys -t $SESSION_NAME:1 "source /home/chambe28/typvenv/bin/activate && cd network-controller && sudo python3 topology.py" C-m
 tmux split-window -v -t $SESSION_NAME:1
 tmux send-keys -t $SESSION_NAME:1.1 "source /home/chambe28/typvenv/bin/activate && cd network-controller && ryu-manager ./controller.py" C-m
 

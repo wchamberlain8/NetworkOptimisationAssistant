@@ -2,12 +2,12 @@ version: "3.1"
 
 stories:
 
-- story: happy path
-  steps:
-  - intent: greet
-  - action: utter_greet
-  - intent: mood_great
-  - action: utter_happy
+# - story: happy path
+#   steps:
+#   - intent: greet
+#   - action: utter_greet
+#   - intent: mood_great
+#   - action: utter_happy
 
 - story: explain term
   steps:
@@ -30,7 +30,17 @@ stories:
     - intent: connect_to_api
     - action: action_connect_to_api
 
-- story: retrieve bandwidth stats
+- story: retrieve top consumer
   steps:
-    - intent: retrieve_bandwidth
+    - intent: retrieve_live_bandwidth
     - action: action_retrieve_bandwidth
+
+- story: retrieve historic stats
+  steps:
+  - intent: retrieve_historic_stats
+  - action: action_retrieve_historic_data
+
+- story: throttle device
+  steps:
+  - intent: throttle_device
+  - action: action_throttle_device
