@@ -122,7 +122,7 @@ class ActionRetrieveBandwidth(Action):
                 if top_consumer:
                     endTime = time.time()
                     elapsedTime = endTime - startTime
-                    mac, hostname = mac_translation(top_consumer['src_mac'])
+                    mac, hostname = mac_translation(top_consumer['dst_mac'])
                     message = f"The top consumer is {hostname} (MAC: {mac}) using {top_consumer['total_bandwidth']:.2f} Mbps. Operation took {elapsedTime:.3f} seconds." #Added in a time record for performance checking
                     #message = f"The top consumer is {top_consumer['src_mac']} using {top_consumer['total_bandwidth']:.2f} Mbps. Operation took {elapsedTime:.3f} seconds." #Added in a time record for performance checking
                 elif timeoutMessage:

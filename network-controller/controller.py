@@ -66,7 +66,7 @@ class Controller(RyuApp):
                             command, mac = data.split("=")
                             if command == "throttle_device":
                                 self.logger.info(f"Attempting to throttle device {mac}")
-                                self.throttle_device(datapath, mac)
+                                self.set_device_queue(datapath, mac, 1)
                             else:
                                 print("Invalid command received from socket.")
                         elif data == "get_live_stats":
@@ -99,7 +99,8 @@ class Controller(RyuApp):
         self.request_stats_periodically(datapath)
         threading.Thread(target=self.start_socket_server, args=(datapath,), daemon=True).start()
 
-        #ADD IN FLOW MOD CREATION HERE!!!
+        #ADD IN FLOW MOD CREATION HERE!!!?????
+        
 
     def request_ports(self, datapath):
         ofproto = datapath.ofproto
@@ -342,12 +343,10 @@ class Controller(RyuApp):
         ]) #, stdout=subprocess.DEVNULL)
 
 
-
-
-    def throttle_device(self, datapath, dst_mac):
-        #Make an new flow rule to throttle a destination mac address
-        #So that we are telling the switch "If anything is destined for this mac address, send it via the throttled queue"
-        #Hence giving the throttling affect
+    # Used for throttling or prioritising a device
+    def set_device_queue(self, datapath, dst_mac, queue_id):
+        # Set a new flow rule to assign a queue (throttling or priority) to a destination MAC address
+        # This tells the switch "If anything is destined for this MAC address, send it via the specified queue"
 
         dpid = datapath.id
 
@@ -356,25 +355,21 @@ class Controller(RyuApp):
             self.logger.error(f"Port for MAC {dst_mac} not found in mac_to_port table.")
             return
 
-        self.logger.info(f"Throttling {dst_mac} on port {port_no} of switch {dpid}")
+        self.logger.info(f"Setting queue {queue_id} for {dst_mac} on port {port_no} of switch {dpid}")
         parser = datapath.ofproto_parser
         ofproto = datapath.ofproto
 
         try:
             match = parser.OFPMatch(eth_dst=dst_mac)
-            #mod_delete = parser.OFPFlowMod(datapath=datapath, command=ofproto.OFPFC_DELETE, out_port=ofproto.OFPP_ANY, out_group=ofproto.OFPG_ANY, match=match)
-            #datapath.send_msg(mod_delete)
 
-
-            #OFPActionOutput first
-            actions = [parser.OFPActionSetQueue(1), parser.OFPActionOutput(port_no)]
+            actions = [parser.OFPActionSetQueue(queue_id), parser.OFPActionOutput(port_no)]
             inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
 
-            mod = parser.OFPFlowMod(datapath=datapath, match=match, instructions=inst, command=ofproto.OFPFC_MODIFY) # IS MODIFY RIGHT? SHOULD IT BE ADD INSTEAD?
+            mod = parser.OFPFlowMod(datapath=datapath, match=match, instructions=inst, priority=10, command=ofproto.OFPFC_ADD)
             datapath.send_msg(mod)
 
-            self.logger.info(f"Throttling rule successfully added for {dst_mac}")
+            self.logger.info(f"Queue {queue_id} successfully set for {dst_mac}")
 
         except Exception as e:
-            print(f"Error throttling device: {e}")
-            return None        
+            print(f"Error setting queue for device: {e}")
+            return None  

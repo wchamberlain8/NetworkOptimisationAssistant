@@ -139,7 +139,6 @@ async def get_live_stats():
     except asyncio.TimeoutError:
         return {"message": "Timeout: The API did not receive stats from the controller in time"}
 
-
 #--------------------------------------------------------------------------------------------------------------------
 #/send_live_stats - Used for retrieving and structuring live flow stats to find the top live consumer and set a flag
 #--------------------------------------------------------------------------------------------------------------------
@@ -175,11 +174,11 @@ async def send_live_stats(data: dict):
         print(f"Here are the live flows: {live_flows}\n")
 
         for flow in live_flows:
-            src_mac = flow.get("src_mac")
+            dst_mac = flow.get("dst_mac")
 
-            if src_mac not in aggregate_mac_bandwidth:
-                aggregate_mac_bandwidth[src_mac] = {"src_mac": src_mac, "total_bandwidth": 0}
-            aggregate_mac_bandwidth[src_mac]["total_bandwidth"] += flow.get("bandwidth")     #if needed, i can easily update this to send the dst_mac to say where stuff is coming from etc.
+            if dst_mac not in aggregate_mac_bandwidth:
+                aggregate_mac_bandwidth[dst_mac] = {"dst_mac": dst_mac, "total_bandwidth": 0}
+            aggregate_mac_bandwidth[dst_mac]["total_bandwidth"] += flow.get("bandwidth")     #if needed, i can easily update this to send the src_mac to say where stuff is coming from etc.
 
         try:
             top_consumer = max(aggregate_mac_bandwidth, key=lambda x: aggregate_mac_bandwidth[x]["total_bandwidth"], default=None) #find the highest bandwidth consumer
