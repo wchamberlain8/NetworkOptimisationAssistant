@@ -185,3 +185,21 @@ nlu:
     - Increase the internet speed for [00:00:00:00:00:04](device)
     - Prioritise the [Gaming PC](device)
     - Prioritise [Smart TV](device)
+
+- intent: unthrottle_device
+  examples: |
+   - Unthrottle [Laptop](device)
+   - Unthrottle the [XBOX](device)
+   - Remove the throttle from [00:00:00:00:00:01](device)
+   - Unthrottle my [Gaming PC](device)
+   - Please unthrottle [Smart TV](device)
+   - Unblock [XBOX](device)
+
+- intent: deprioritise_device
+  examples: |
+   - Deprioritise [Laptop](device)
+   - Deprioritise the [XBOX](device)
+   - Remove the priority from [00:00:00:00:00:01](device)
+   - Deprioritise my [Gaming PC](device)
+   - Please deprioritise [Smart TV](device)
+   - Remove the priority from [XBOX](device) 

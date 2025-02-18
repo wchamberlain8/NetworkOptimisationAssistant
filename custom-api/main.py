@@ -212,9 +212,6 @@ async def throttle_device(json: dict):
 
     device = json.get("device")
 
-    print(f"Device: {device}")
-    print(f"Data: {json}")
-
     if device:
 
         #figure out whether the user's input was a mac address or a hostname
@@ -245,15 +242,12 @@ async def throttle_device(json: dict):
         return {"message": "No device could be parsed from the JSON payload"}
     
 #--------------------------------------------------------------------------------------------------------------------
-#prioritise_device - Used for prioritising a specific device on the network
+#/prioritise_device - Used for prioritising a specific device on the network
 #--------------------------------------------------------------------------------------------------------------------
 @app.post("/prioritise_device")
 async def prioritise_device(json: dict):
 
     device = json.get("device")
-
-    print(f"Device: {device}")
-    print(f"Data: {json}")
 
     if device:
 
@@ -278,6 +272,82 @@ async def prioritise_device(json: dict):
             s.close()
 
             return {"message": "success"}
+        except Exception as e:
+            print(f"Error connecting to the controller: {e}")
+
+    else:
+        return {"message": "No device could be parsed from the JSON payload"}
+    
+#--------------------------------------------------------------------------------------------------------------------
+#/unthrottle_device - Used for unthrottling a specific device on the network
+#--------------------------------------------------------------------------------------------------------------------
+@app.post("/unthrottle_device")
+async def unthrottle_device(json: dict):
+
+    device = json.get("device")
+
+    if device:
+
+        #figure out whether the user's input was a mac address or a hostname
+        if mac_address_check(device):
+            mac = device
+            print("MAC ADDRESS DETECTED: ", mac)
+        else:
+            print("HOSTNAME DETECTED: ", device)
+            normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', device.lower())
+            mac = hostname_to_mac.get(normalised_hostname)
+            print("CONVERTED TO MAC: ", mac)
+            if not mac:
+                return {"message": "Unknown device"}
+        
+        #connect to the socket
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(("127.0.0.2", 9090))
+            message = f"unthrottle_device={mac}"
+            s.sendall(message.encode('utf-8'))
+            s.close()
+
+            return {"message": "success"}
+
+        except Exception as e:
+            print(f"Error connecting to the controller: {e}")
+
+    else:
+        return {"message": "No device could be parsed from the JSON payload"}
+    
+#--------------------------------------------------------------------------------------------------------------------
+#/deprioritise_device - Used for deprioritisng a specific device on the network
+#--------------------------------------------------------------------------------------------------------------------
+@app.post("/deprioritise_device")
+async def deprioritise_device(json: dict):
+
+    device = json.get("device")
+
+    if device:
+
+        #figure out whether the user's input was a mac address or a hostname
+        if mac_address_check(device):
+            mac = device
+            print("MAC ADDRESS DETECTED: ", mac)
+        else:
+            print("HOSTNAME DETECTED: ", device)
+            normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', device.lower())
+            mac = hostname_to_mac.get(normalised_hostname)
+            print("CONVERTED TO MAC: ", mac)
+            if not mac:
+                return {"message": "Unknown device"}
+        
+        #connect to the socket
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(("127.0.0.2", 9090))
+            message = f"deprioritise_device={mac}"
+            s.sendall(message.encode('utf-8'))
+            s.close()
+
+            return {"message": "success"}
+
         except Exception as e:
             print(f"Error connecting to the controller: {e}")
 

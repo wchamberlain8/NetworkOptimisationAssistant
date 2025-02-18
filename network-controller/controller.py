@@ -70,6 +70,12 @@ class Controller(RyuApp):
                             elif command == "prioritise_device":
                                 self.logger.info(f"Attempting to prioritise device {mac}")
                                 self.set_device_queue(datapath, mac, 2)
+                            elif command == "unthrottle_device":
+                                self.logger.info(f"Attempting to unthrottle device {mac}")
+                                self.delete_device_queue(datapath, mac)
+                            elif command == "deprioritise_device":
+                                self.logger.info(f"Attempting to deprioritise device {mac}")
+                                self.delete_device_queue(datapath, mac)
                             else:
                                 print("Invalid command received from socket.")
                         elif data == "get_live_stats":
@@ -378,7 +384,9 @@ class Controller(RyuApp):
             return None  
 
 
+    # **********NOT WORKING: NEED TO PROBABLY CHANGE THE MATCHING CRITERIA TO BE WAY MORE SPECIFIC **********
 
+    
     #Used for removing throttling or prioritisation from a device
     def delete_device_queue(self, datapath, dst_mac):
         # Delete a flow rule that previously assigned a queue to a destination MAC address

@@ -16,6 +16,8 @@ intents:
   - retrieve_historic_stats
   - throttle_device
   - prioritise_device
+  - unthrottle_device
+  - deprioritise_device
 
 responses:
   utter_greet:
@@ -64,6 +66,8 @@ actions:
   - action_retrieve_historic_data
   - action_throttle_device
   - action_prioritise_device
+  - action_unthrottle_device
+  - action_deprioritise_device
 
 entities:
  - term
