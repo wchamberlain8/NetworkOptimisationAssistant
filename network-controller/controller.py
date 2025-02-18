@@ -373,3 +373,32 @@ class Controller(RyuApp):
         except Exception as e:
             print(f"Error setting queue for device: {e}")
             return None  
+
+
+
+    #Used for removing throttling or prioritisation from a device
+    def delete_device_queue(self, datapath, dst_mac):
+        # Delete a flow rule that previously assigned a queue to a destination MAC address
+        # This tells the switch to stop sending packets via that the specified queue, and instead use a default setting
+
+        dpid = datapath.id
+
+        port_no = self.mac_to_port[dpid].get(dst_mac)
+        if port_no is None:
+            self.logger.error(f"Port for MAC {dst_mac} not found in mac_to_port table.")
+            return
+
+        self.logger.info(f"Deleting queue for {dst_mac} on port {port_no} of switch {dpid}")
+        parser = datapath.ofproto_parser
+        ofproto = datapath.ofproto
+
+        try:
+            match = parser.OFPMatch(eth_dst=dst_mac)
+            mod = parser.OFPFlowMod(datapath=datapath, match=match, priority=10, command=ofproto.OFPFC_DELETE)
+            datapath.send_msg(mod)
+
+            self.logger.info(f"Queue successfully deleted for {dst_mac}")
+
+        except Exception as e:
+            print(f"Error deleting queue for device: {e}")
+            return None

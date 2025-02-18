@@ -134,8 +134,8 @@ async def get_live_stats():
 
     #using asyncio to wait for the top consumer to be calculated, then returning a result, if any
     try:
-        top_consumer = await asyncio.wait_for(top_consumer_cache.get(), timeout=5)
-        return {"top_consumer": top_consumer}
+        combined_data = await asyncio.wait_for(top_consumer_cache.get(), timeout=5)
+        return {"data": combined_data}
     except asyncio.TimeoutError:
         return {"message": "Timeout: The API did not receive stats from the controller in time"}
 
@@ -184,11 +184,23 @@ async def send_live_stats(data: dict):
             top_consumer = max(aggregate_mac_bandwidth, key=lambda x: aggregate_mac_bandwidth[x]["total_bandwidth"], default=None) #find the highest bandwidth consumer
             top_consumer = aggregate_mac_bandwidth[top_consumer]
             print(f"Top Consumer = {top_consumer}\n")
-            await top_consumer_cache.put(top_consumer) #put the top consumer into the cache
+
+            filtered_live_flows = [flow for flow in live_flows if flow.get("dst_mac") != top_consumer.get("dst_mac")]
+            if filtered_live_flows == []:
+                filtered_live_flows = None
+
+            combined_data = {
+                "top_consumer": top_consumer,
+                "live_flows": filtered_live_flows
+            }
+
+            await top_consumer_cache.put(combined_data) #put the top consumer into the cache
         except Exception as e:
             print(f"Error calculating top consumer: {e}")
     else:
         print("***** There is currently nothing using bandwidth *****\n")
+
+    await top_consumer_cache.put(None)
 
 
 #--------------------------------------------------------------------------------------------------------------------
