@@ -44,3 +44,8 @@ stories:
   steps:
   - intent: throttle_device
   - action: action_throttle_device
+
+- story: prioritise device
+  steps:
+  - intent: prioritise_device
+  - action: action_prioritise_device

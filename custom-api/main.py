@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import socket
 import asyncio
+import re
 
 #initialise the FastAPI
 app = FastAPI()
@@ -19,7 +20,10 @@ mac_to_hostname = {
     "00:00:00:00:00:05": "Gaming PC"
 }
 
-hostname_to_mac = {v: k for k, v in mac_to_hostname.items()} #reverse dict for faster lookup, might need to change if we add in custom hostname naming through rasa!!
+hostname_to_mac = {}
+for mac, hostname in mac_to_hostname.items():
+    normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', hostname.lower()) #normalise the hostname to allow for different spellings etc.
+    hostname_to_mac[normalised_hostname] = mac
 
 #data model if we want to pass some data to the API
 class InputModel(BaseModel):
@@ -51,7 +55,8 @@ async def mac_translation(input: InputModel):
         
     #else, if input == a hostname, try and find the relevant mac address translation, if not, return None
     else:
-        mac_address = hostname_to_mac.get(str)
+        normalised_input = re.sub(r'[^a-zA-Z0-9]', '', str.lower())
+        mac_address = hostname_to_mac.get(normalised_input)
         if mac_address:
             return {"mac": mac_address, "hostname": str}
         else:
@@ -218,7 +223,8 @@ async def throttle_device(json: dict):
             print("MAC ADDRESS DETECTED: ", mac)
         else:
             print("HOSTNAME DETECTED: ", device)
-            mac = hostname_to_mac.get(device)
+            normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', device.lower())
+            mac = hostname_to_mac.get(normalised_hostname)
             print("CONVERTED TO MAC: ", mac)
             if not mac:
                 return {"message": "Unknown device"}
@@ -235,6 +241,46 @@ async def throttle_device(json: dict):
         except Exception as e:
             print(f"Error connecting to the controller: {e}")
     
+    else:
+        return {"message": "No device could be parsed from the JSON payload"}
+    
+#--------------------------------------------------------------------------------------------------------------------
+#prioritise_device - Used for prioritising a specific device on the network
+#--------------------------------------------------------------------------------------------------------------------
+@app.post("/prioritise_device")
+async def prioritise_device(json: dict):
+
+    device = json.get("device")
+
+    print(f"Device: {device}")
+    print(f"Data: {json}")
+
+    if device:
+
+        #figure out whether the user's input was a mac address or a hostname
+        if mac_address_check(device):
+            mac = device
+            print("MAC ADDRESS DETECTED: ", mac)
+        else:
+            print("HOSTNAME DETECTED: ", device)
+            normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', device.lower())
+            mac = hostname_to_mac.get(normalised_hostname)
+            print("CONVERTED TO MAC: ", mac)
+            if not mac:
+                return {"message": "Unknown device"}
+        
+        #connect to the socket
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(("127.0.0.2", 9090))
+            message = f"prioritise_device={mac}"
+            s.sendall(message.encode('utf-8'))
+            s.close()
+
+            return {"message": "success"}
+        except Exception as e:
+            print(f"Error connecting to the controller: {e}")
+
     else:
         return {"message": "No device could be parsed from the JSON payload"}
 

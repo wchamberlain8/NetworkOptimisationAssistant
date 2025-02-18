@@ -67,6 +67,9 @@ class Controller(RyuApp):
                             if command == "throttle_device":
                                 self.logger.info(f"Attempting to throttle device {mac}")
                                 self.set_device_queue(datapath, mac, 1)
+                            elif command == "prioritise_device":
+                                self.logger.info(f"Attempting to prioritise device {mac}")
+                                self.set_device_queue(datapath, mac, 2)
                             else:
                                 print("Invalid command received from socket.")
                         elif data == "get_live_stats":

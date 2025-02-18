@@ -171,3 +171,17 @@ nlu:
     - Please throttle my [Gaming PC](device)
     - Limit the internet speed for [00:00:00:00:00:04](device)
     - Throttle the [Gaming PC](device)
+    - Throttle [Smart TV](device)
+
+- intent: prioritise_device
+  examples: |
+    - Can you prioritise the internet for [Laptop](device)?
+    - Can you give more internet speed to [XBOX](device)?
+    - Can you increase the internet speed for [00:00:00:00:00:01](device)?
+    - Can you speed up the internet for [00:00:00:00:00:02](device)?
+    - Prioritise the internet for [00:00:00:00:00:03](device)
+    - Prioritise my [Smart TV](device)
+    - Please prioritise my [Gaming PC](device)
+    - Increase the internet speed for [00:00:00:00:00:04](device)
+    - Prioritise the [Gaming PC](device)
+    - Prioritise [Smart TV](device)

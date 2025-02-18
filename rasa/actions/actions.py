@@ -124,8 +124,9 @@ class ActionRetrieveBandwidth(Action):
                 if top_consumer or live_flows:
                     end_time = time.time()
                     elapsed_time = end_time - start_time
-                    message = "🌐 Here are all the current live flows on the network:\n"
-                    message = message + "\n"
+                    message = "🌐 Here are all the current live flows on the network: \n"
+                    message += "  \n  "
+
 
                     for flow in live_flows:
                         mac, hostname = mac_translation(flow['dst_mac'])
@@ -134,7 +135,7 @@ class ActionRetrieveBandwidth(Action):
                         bandwidth = flow.get('bandwidth', "N/A")
                         if bandwidth != "N/A":
                             bandwidth = f"{bandwidth:.2f}"
-                        message += f"• Device {hostname} (MAC: {mac}) is using {bandwidth} Mbps\n"
+                        message += f"• Device {hostname} (MAC: {mac}) is using {bandwidth} Mbps \n"
 
                     if top_consumer:
                         mac, hostname = mac_translation(top_consumer['dst_mac'])
@@ -142,7 +143,10 @@ class ActionRetrieveBandwidth(Action):
                             top_consumer_bw = top_consumer.get('total_bandwidth', "N/A")
                             if top_consumer_bw != "N/A":
                                 top_consumer_bw = f"{top_consumer_bw:.2f}"
-                            message += f"The top consumer is {hostname} (MAC: {mac}) using {top_consumer_bw} Mbps. Operation took {elapsed_time:.3f} seconds."
+                            
+                            message += "  \n  "
+                            message += f"📈 The top consumer is {hostname} (MAC: {mac}) using {top_consumer_bw} Mbps. Operation took {elapsed_time:.3f} seconds."
+
 
                 elif timeout_message:
                     message = timeout_message
@@ -185,12 +189,12 @@ class ActionRetrieveHistoricBandwidth(Action):
                     #src_mac = device["src_mac"]
                     mac, hostname = mac_translation(device["src_mac"])
                     byte_count = device["overall_byte_count"]
-                    message = message + f"• Device {hostname} (MAC: {mac}) has used {byte_count}\n"
+                    message = message + f"\t • Device {hostname} (MAC: {mac}) has used {byte_count}\n"
 
             else:
                 message = f"Error: Recieved {response.status_code} from the API"
         except Exception as e:
-            message = f"API call failed: {str(e)}"
+            message = f"Exception occured in Rasa Actions: {str(e)}"
 
         dispatcher.utter_message(text=message)
         return []
@@ -223,11 +227,39 @@ class ActionThrottleDevice(Action):
             else:
                 message = f"Error: Received {response.status_code} from the API."
         except Exception as e:
-            message = f"API call failed: {str(e)}"
+            message = f"Exception occured in Rasa Actions: {str(e)}"
 
         dispatcher.utter_message(text=message)
         return []
+    
+class ActionPrioritiseDevice(Action):
 
+    def name (self) -> Text:
+        return "action_prioritise_device"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        url = "http://127.0.0.1:8000/prioritise_device"
+
+        try:
+            device = tracker.get_slot("device")
+            response = requests.post(url, json={"device": device})
+
+            if response.status_code == 200:
+                if response.json().get("message"):
+                    if response.json().get("message") == "success":
+                        message = "Device has been prioritised successfully. To stop it being prioritised, simply ask me to 'Deprioritise (device name)'."
+                    else:
+                        message = response.json().get("message")
+                else:
+                    message = "Device could not be prioritised. Please check the device name and try again. Alternatively, ask to view current devices to specify using MAC instead."
+            else:
+                message = f"Error: Received {response.status_code} from the API."
+        except Exception as e:
+            message = f"Exception occured in Rasa Actions: {str(e)}"
+
+        dispatcher.utter_message(text=message)
+        return []
 
 #--------------------------------------------------------------------------------------------------------------------
 #Helper function which accesses the API to translate a MAC address to a hostname
@@ -251,7 +283,7 @@ def mac_translation(input_str):
             return None, None
 
     except Exception as e:
-        print(f"API call failed: {str(e)}")
+        message = f"Exception occured in Rasa Actions: {str(e)}"
         return None, None
 
     return mac, hostname

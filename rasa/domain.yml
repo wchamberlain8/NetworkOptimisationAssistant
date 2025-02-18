@@ -15,6 +15,7 @@ intents:
   - retrieve_live_bandwidth
   - retrieve_historic_stats
   - throttle_device
+  - prioritise_device
 
 responses:
   utter_greet:
@@ -62,6 +63,7 @@ actions:
   - action_retrieve_bandwidth
   - action_retrieve_historic_data
   - action_throttle_device
+  - action_prioritise_device
 
 entities:
  - term
