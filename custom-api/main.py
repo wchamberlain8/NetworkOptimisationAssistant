@@ -186,8 +186,6 @@ async def send_live_stats(data: dict):
             print(f"Top Consumer = {top_consumer}\n")
 
             filtered_live_flows = [flow for flow in live_flows if flow.get("dst_mac") != top_consumer.get("dst_mac")]
-            if filtered_live_flows == []:
-                filtered_live_flows = None
 
             combined_data = {
                 "top_consumer": top_consumer,
@@ -199,8 +197,6 @@ async def send_live_stats(data: dict):
             print(f"Error calculating top consumer: {e}")
     else:
         print("***** There is currently nothing using bandwidth *****\n")
-
-    await top_consumer_cache.put(None)
 
 
 #--------------------------------------------------------------------------------------------------------------------

@@ -114,7 +114,8 @@ class ActionRetrieveBandwidth(Action):
 
             if response.status_code == 200:
                 data = response.json()
-                combined_data = data.get("data", {})
+                combined_data = data.get("data", {}) #problem on second run??
+                print(combined_data)
                 timeout_message = data.get("message")
 
                 top_consumer = combined_data.get("top_consumer", {})
@@ -124,6 +125,7 @@ class ActionRetrieveBandwidth(Action):
                     end_time = time.time()
                     elapsed_time = end_time - start_time
                     message = "🌐 Here are all the current live flows on the network:\n"
+                    message = message + "\n"
 
                     for flow in live_flows:
                         mac, hostname = mac_translation(flow['dst_mac'])
