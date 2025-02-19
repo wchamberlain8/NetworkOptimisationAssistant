@@ -19,6 +19,7 @@ from time import sleep
 from ryu.base.app_manager import RyuApp
 from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER, set_ev_cls
+from ryu.ofproto.ofproto_v1_2 import OFPG_ANY
 from ryu.ofproto import ofproto_v1_3
 from ryu.lib.packet import *
 from ryu.lib.dpid import dpid_to_str
@@ -405,7 +406,7 @@ class Controller(RyuApp):
 
         try:
             match = parser.OFPMatch(eth_dst=dst_mac)
-            mod = parser.OFPFlowMod(datapath=datapath, match=match, priority=10, command=ofproto.OFPFC_DELETE)
+            mod = parser.OFPFlowMod(datapath=datapath, match=match, priority=10, out_port=port_no, out_group=OFPG_ANY, command=ofproto.OFPFC_DELETE) #need to include out_port and out_group
             datapath.send_msg(mod)
 
             self.logger.info(f"Queue successfully deleted for {dst_mac}")
