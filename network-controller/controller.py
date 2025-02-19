@@ -1,19 +1,4 @@
 # -*- coding: utf-8 -*-
-
-#************************************************************************************************************************
-# THIS IS THE CONTROLLER TEMPLATE USED IN THE RYU TUTORIAL (up to level 2) TO BE EXPANDED UPON AND IMPROVED IN THE FUTURE
-# I WILL CHANGE PARTS AS TO NOT COPY THE CONTROLLER.py PROVIDED IN THE TEMPLATE
-#************************************************************************************************************************
-
-"""
-Ryu Tutorial Controller
-
-This controller allows OpenFlow datapaths to act as Ethernet Hubs. Using the
-tutorial you should convert this to a layer 2 learning switch.
-
-See the README for more...
-"""
-
 import subprocess
 from time import sleep
 from ryu.base.app_manager import RyuApp
@@ -89,12 +74,7 @@ class Controller(RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def features_handler(self, ev):
-        '''
-        Handshake: Features Request Response Handler
 
-        Installs a low level (0) flow table modification that pushes packets to
-        the controller. This acts as a rule for flow-table misses.
-        '''
         datapath = ev.msg.datapath
         self.logger.info(f"Connected to switch {datapath.id}")
         ofproto = datapath.ofproto
@@ -138,13 +118,7 @@ class Controller(RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def packet_in_handler(self, ev):
-        '''
-        Packet In Event Handler
 
-        Takes packets provided by the OpenFlow packet in event structure and
-        floods them to all ports. This is the core functionality of the Ethernet
-        Hub.
-        '''
         msg = ev.msg
         datapath = msg.datapath
         ofproto = msg.datapath.ofproto
@@ -207,26 +181,12 @@ class Controller(RyuApp):
             return
         
 
-
-
-
     def __add_flow(self, datapath, priority, match, actions):
-        '''
-        Install Flow Table Modification
-
-        Takes a set of OpenFlow Actions and a OpenFlow Packet Match and creates
-        the corresponding Flow-Mod. This is then installed to a given datapath
-        at a given priority.
-        '''
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
         inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
         mod = parser.OFPFlowMod(datapath=datapath, priority=priority, match=match, instructions=inst)
         datapath.send_msg(mod)
-
-
-
-
 
 
     #Periodically request + post flow stats to the API to keep a record of bandwidth usage
@@ -241,10 +201,6 @@ class Controller(RyuApp):
         datapath.send_msg(request)
         
         threading.Timer(20, self.request_stats_periodically, args=[datapath]).start()
-
-
-   
-
 
 
 
@@ -278,9 +234,6 @@ class Controller(RyuApp):
                     response = requests.post("http://127.0.0.1:8000/update_historical_stats", json=payload)
                 except requests.exceptions.RequestException as e:
                     print(f"Error sending historical data: {e}")
-
-
-
     
     
     def request_live_stats(self, datapath):
@@ -384,9 +337,6 @@ class Controller(RyuApp):
             print(f"Error setting queue for device: {e}")
             return None  
 
-
-    # **********NOT WORKING: NEED TO PROBABLY CHANGE THE MATCHING CRITERIA TO BE WAY MORE SPECIFIC **********
-
     
     #Used for removing throttling or prioritisation from a device
     def delete_device_queue(self, datapath, dst_mac):
@@ -406,7 +356,7 @@ class Controller(RyuApp):
 
         try:
             match = parser.OFPMatch(eth_dst=dst_mac)
-            mod = parser.OFPFlowMod(datapath=datapath, match=match, priority=10, out_port=port_no, out_group=OFPG_ANY, command=ofproto.OFPFC_DELETE) #need to include out_port and out_group
+            mod = parser.OFPFlowMod(datapath=datapath, match=match, priority=10, out_port=port_no, out_group=OFPG_ANY, command=ofproto.OFPFC_DELETE)
             datapath.send_msg(mod)
 
             self.logger.info(f"Queue successfully deleted for {dst_mac}")
