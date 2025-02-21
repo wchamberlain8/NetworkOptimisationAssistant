@@ -18,6 +18,8 @@ intents:
   - prioritise_device
   - unthrottle_device
   - deprioritise_device
+  - retrieve_throttled_devices
+  - retrieve_prioritised_devices
 
 responses:
   utter_greet:
@@ -68,6 +70,8 @@ actions:
   - action_prioritise_device
   - action_unthrottle_device
   - action_deprioritise_device
+  - action_retrieve_throttled_devices
+  - action_retrieve_prioritised_devices
 
 entities:
  - term

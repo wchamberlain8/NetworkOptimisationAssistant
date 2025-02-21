@@ -22,3 +22,8 @@ rules:
   steps:
    - intent: ask_for_help
    - action: utter_help
+
+- rule: prioritise device
+  steps:
+   - intent: prioritise_device
+   - action: action_prioritise_device

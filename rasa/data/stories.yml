@@ -18,7 +18,7 @@ stories:
 
 - story: compare terms
   steps:
-    - intent: ask_for_explanation
+    - intent: ask_for_comparison
       entities:
         - comparison_term1
         - comparison_term2
@@ -59,3 +59,13 @@ stories:
   steps:
   - intent: deprioritise_device
   - action: action_deprioritise_device
+
+- story: retrieve throttled devices
+  steps:
+  - intent: retrieve_throttled_devices
+  - action: action_retrieve_throttled_devices
+
+- story: retrieve prioritised devices
+  steps:
+  - intent: retrieve_prioritised_devices
+  - action: action_retrieve_prioritised_devices

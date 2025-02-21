@@ -52,16 +52,24 @@ class Controller(RyuApp):
                             command, mac = data.split("=")
                             if command == "throttle_device":
                                 self.logger.info(f"Attempting to throttle device {mac}")
-                                self.set_device_queue(datapath, mac, 1)
+                                result = self.set_device_queue(datapath, mac, 1)
+                                message = "success" if result else "error"
+                                connection.sendall(message.encode("utf-8"))
                             elif command == "prioritise_device":
                                 self.logger.info(f"Attempting to prioritise device {mac}")
-                                self.set_device_queue(datapath, mac, 2)
+                                result = self.set_device_queue(datapath, mac, 2)
+                                message = "success" if result else "error"
+                                connection.sendall(message.encode("utf-8"))
                             elif command == "unthrottle_device":
                                 self.logger.info(f"Attempting to unthrottle device {mac}")
-                                self.delete_device_queue(datapath, mac)
+                                result = self.delete_device_queue(datapath, mac)
+                                message = "success" if result else "error"
+                                connection.sendall(message.encode("utf-8"))
                             elif command == "deprioritise_device":
                                 self.logger.info(f"Attempting to deprioritise device {mac}")
-                                self.delete_device_queue(datapath, mac)
+                                result = self.delete_device_queue(datapath, mac)
+                                message = "success" if result else "error"
+                                connection.sendall(message.encode("utf-8"))
                             else:
                                 print("Invalid command received from socket.")
                         elif data == "get_live_stats":
@@ -316,7 +324,7 @@ class Controller(RyuApp):
         port_no = self.mac_to_port[dpid].get(dst_mac)
         if port_no is None:
             self.logger.error(f"Port for MAC {dst_mac} not found in mac_to_port table.")
-            return
+            return False
 
         self.logger.info(f"Setting queue {queue_id} for {dst_mac} on port {port_no} of switch {dpid}")
         parser = datapath.ofproto_parser
@@ -332,10 +340,12 @@ class Controller(RyuApp):
             datapath.send_msg(mod)
 
             self.logger.info(f"Queue {queue_id} successfully set for {dst_mac}")
+            
+            return True
 
         except Exception as e:
             print(f"Error setting queue for device: {e}")
-            return None  
+            return False  
 
     
     #Used for removing throttling or prioritisation from a device
@@ -348,7 +358,7 @@ class Controller(RyuApp):
         port_no = self.mac_to_port[dpid].get(dst_mac)
         if port_no is None:
             self.logger.error(f"Port for MAC {dst_mac} not found in mac_to_port table.")
-            return
+            return False
 
         self.logger.info(f"Deleting queue for {dst_mac} on port {port_no} of switch {dpid}")
         parser = datapath.ofproto_parser
@@ -360,7 +370,8 @@ class Controller(RyuApp):
             datapath.send_msg(mod)
 
             self.logger.info(f"Queue successfully deleted for {dst_mac}")
+            return True
 
         except Exception as e:
             print(f"Error deleting queue for device: {e}")
-            return None
+            return False

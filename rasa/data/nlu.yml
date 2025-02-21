@@ -202,4 +202,29 @@ nlu:
    - Remove the priority from [00:00:00:00:00:01](device)
    - Deprioritise my [Gaming PC](device)
    - Please deprioritise [Smart TV](device)
-   - Remove the priority from [XBOX](device) 
+   - Remove the priority from [XBOX](device)
+   - Unprioritise [Laptop](device)
+
+- intent: retrieve_throttled_devices
+  examples: |
+    - What devices are being throttled?
+    - Show me the devices that are being throttled
+    - Which devices have had their internet speed reduced?
+    - What devices have had their internet speed limited?
+    - What devices are currently being throttled?
+    - List the devices that are being throttled
+    - List throttled devices
+    - Show me throttled devices
+    - List blocked devices
+
+- intent: retrieve_prioritised_devices
+  examples: |
+    - What devices are being prioritised?
+    - Show me the devices that are being prioritised
+    - Which devices have had their internet speed increased?
+    - What devices have had their internet speed boosted?
+    - What devices are currently being prioritised?
+    - List the devices that are being prioritised
+    - List prioritised devices
+    - Show me prioritised devices
+    - List boosted devices

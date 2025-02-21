@@ -25,6 +25,9 @@ for mac, hostname in mac_to_hostname.items():
     normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', hostname.lower()) #normalise the hostname to allow for different spellings etc.
     hostname_to_mac[normalised_hostname] = mac
 
+throttled_devices = []
+prioritised_devices = []
+
 #data model if we want to pass some data to the API
 class InputModel(BaseModel):
     input_value: str
@@ -217,13 +220,14 @@ async def throttle_device(json: dict):
         #figure out whether the user's input was a mac address or a hostname
         if mac_address_check(device):
             mac = device
-            print("MAC ADDRESS DETECTED: ", mac)
         else:
-            print("HOSTNAME DETECTED: ", device)
             normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', device.lower())
             mac = hostname_to_mac.get(normalised_hostname)
-            print("CONVERTED TO MAC: ", mac)
-            if not mac:
+
+            if mac in throttled_devices:
+                return {"message": "Present"}
+
+            if mac is None:
                 return {"message": "Unknown device"}
         
         #connect to the socket
@@ -232,9 +236,15 @@ async def throttle_device(json: dict):
             s.connect(("127.0.0.2", 9090))
             message = f"throttle_device={mac}"
             s.sendall(message.encode('utf-8'))
+            response = s.recv(1024).decode('utf-8')
             s.close()
-
-            return {"message": "success"}
+            
+            if response == "success":
+                throttled_devices.append(mac)
+                return {"message": "success"}
+            else:
+                return {"message": "error"}
+            
         except Exception as e:
             print(f"Error connecting to the controller: {e}")
     
@@ -251,16 +261,19 @@ async def prioritise_device(json: dict):
 
     if device:
 
+        print("WE HERE")
+
         #figure out whether the user's input was a mac address or a hostname
         if mac_address_check(device):
             mac = device
-            print("MAC ADDRESS DETECTED: ", mac)
         else:
-            print("HOSTNAME DETECTED: ", device)
             normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', device.lower())
             mac = hostname_to_mac.get(normalised_hostname)
-            print("CONVERTED TO MAC: ", mac)
-            if not mac:
+
+            if mac in prioritised_devices:
+                return {"message": "Present"}
+
+            if mac is None:
                 return {"message": "Unknown device"}
         
         #connect to the socket
@@ -269,9 +282,14 @@ async def prioritise_device(json: dict):
             s.connect(("127.0.0.2", 9090))
             message = f"prioritise_device={mac}"
             s.sendall(message.encode('utf-8'))
+            response = s.recv(1024).decode('utf-8')
             s.close()
 
-            return {"message": "success"}
+            if response == "success":
+                prioritised_devices.append(mac)
+                return {"message": "success"}
+            else:
+                return {"message": "error"}
         except Exception as e:
             print(f"Error connecting to the controller: {e}")
 
@@ -291,13 +309,14 @@ async def unthrottle_device(json: dict):
         #figure out whether the user's input was a mac address or a hostname
         if mac_address_check(device):
             mac = device
-            print("MAC ADDRESS DETECTED: ", mac)
         else:
-            print("HOSTNAME DETECTED: ", device)
             normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', device.lower())
             mac = hostname_to_mac.get(normalised_hostname)
-            print("CONVERTED TO MAC: ", mac)
-            if not mac:
+            
+            if mac not in throttled_devices:
+                return {"message": "not_Present"}
+            
+            if mac is None:
                 return {"message": "Unknown device"}
         
         #connect to the socket
@@ -306,9 +325,13 @@ async def unthrottle_device(json: dict):
             s.connect(("127.0.0.2", 9090))
             message = f"unthrottle_device={mac}"
             s.sendall(message.encode('utf-8'))
+            response = s.recv(1024).decode('utf-8')
             s.close()
 
-            return {"message": "success"}
+            if response == "success":
+                throttled_devices.remove(mac)
+            else:
+                return {"message": "error"}
 
         except Exception as e:
             print(f"Error connecting to the controller: {e}")
@@ -329,13 +352,14 @@ async def deprioritise_device(json: dict):
         #figure out whether the user's input was a mac address or a hostname
         if mac_address_check(device):
             mac = device
-            print("MAC ADDRESS DETECTED: ", mac)
         else:
-            print("HOSTNAME DETECTED: ", device)
             normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', device.lower())
             mac = hostname_to_mac.get(normalised_hostname)
-            print("CONVERTED TO MAC: ", mac)
-            if not mac:
+
+            if mac not in prioritised_devices:
+                return {"message": "not_Present"}
+
+            if mac is None:
                 return {"message": "Unknown device"}
         
         #connect to the socket
@@ -344,15 +368,36 @@ async def deprioritise_device(json: dict):
             s.connect(("127.0.0.2", 9090))
             message = f"deprioritise_device={mac}"
             s.sendall(message.encode('utf-8'))
+            response = s.recv(1024).decode('utf-8')
             s.close()
 
-            return {"message": "success"}
+            if response == "success":
+                prioritised_devices.remove(mac)
+                return {"message": "success"}   
+            else:
+                return {"message": "error"}
 
         except Exception as e:
             print(f"Error connecting to the controller: {e}")
 
     else:
         return {"message": "No device could be parsed from the JSON payload"}
+    
+#--------------------------------------------------------------------------------------------------------------------
+#/get_throttled_devices - Used for retrieving a list of all currently throttled devices
+#--------------------------------------------------------------------------------------------------------------------
+@app.get("/get_throttled_devices")
+async def get_throttled_devices():
+    print("Throttled Devices: ", throttled_devices)
+    return {"throttled_devices": throttled_devices}
+
+#--------------------------------------------------------------------------------------------------------------------
+#/get_prioritised_devices - Used for retrieving a list of all currently prioritised devices
+#--------------------------------------------------------------------------------------------------------------------
+@app.get("/get_prioritised_devices")
+async def get_prioritised_devices():
+    return {"prioritised_devices": prioritised_devices}
+
 
 
 #*****************************************
