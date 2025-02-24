@@ -1,11 +1,11 @@
 #!/bin/bash
 
-tmux kill-session -t test
+tmux kill-session -t NOA_TMUX_SESSION
 
 sudo mn -c &
 wait
 
-SESSION_NAME="test"
+SESSION_NAME="NOA_TMUX_SESSION"
 tmux new-session -d -s $SESSION_NAME
 
 # Background processes - API and Rasa Actions
@@ -25,5 +25,5 @@ tmux new-window -t $SESSION_NAME -n "NOA"
 tmux send-keys -t $SESSION_NAME:2 "source /home/chambe28/typvenv/bin/activate && cd rasa && rasa shell" C-m
 
 tmux select-window -t $SESSION_NAME:1
-tmux select-pane -t $SESSION_NAME:1.0
+tmux select-pane -t $SESSION_NAME:1.1
 tmux attach-session -t $SESSION_NAME
