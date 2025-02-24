@@ -1,24 +1,10 @@
 # -*- coding: utf-8 -*-
-
-#************************************************************************************************************************
-# THIS IS THE CONTROLLER TEMPLATE USED IN THE RYU TUTORIAL (up to level 2) TO BE EXPANDED UPON AND IMPROVED IN THE FUTURE
-# I WILL CHANGE PARTS AS TO NOT COPY THE CONTROLLER.py PROVIDED IN THE TEMPLATE
-#************************************************************************************************************************
-
-"""
-Ryu Tutorial Controller
-
-This controller allows OpenFlow datapaths to act as Ethernet Hubs. Using the
-tutorial you should convert this to a layer 2 learning switch.
-
-See the README for more...
-"""
-
 import subprocess
 from time import sleep
 from ryu.base.app_manager import RyuApp
 from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER, set_ev_cls
+from ryu.ofproto.ofproto_v1_2 import OFPG_ANY
 from ryu.ofproto import ofproto_v1_3
 from ryu.lib.packet import *
 from ryu.lib.dpid import dpid_to_str
@@ -66,7 +52,24 @@ class Controller(RyuApp):
                             command, mac = data.split("=")
                             if command == "throttle_device":
                                 self.logger.info(f"Attempting to throttle device {mac}")
-                                self.set_device_queue(datapath, mac, 1)
+                                result = self.set_device_queue(datapath, mac, 1)
+                                message = "success" if result else "error"
+                                connection.sendall(message.encode("utf-8"))
+                            elif command == "prioritise_device":
+                                self.logger.info(f"Attempting to prioritise device {mac}")
+                                result = self.set_device_queue(datapath, mac, 2)
+                                message = "success" if result else "error"
+                                connection.sendall(message.encode("utf-8"))
+                            elif command == "unthrottle_device":
+                                self.logger.info(f"Attempting to unthrottle device {mac}")
+                                result = self.delete_device_queue(datapath, mac)
+                                message = "success" if result else "error"
+                                connection.sendall(message.encode("utf-8"))
+                            elif command == "deprioritise_device":
+                                self.logger.info(f"Attempting to deprioritise device {mac}")
+                                result = self.delete_device_queue(datapath, mac)
+                                message = "success" if result else "error"
+                                connection.sendall(message.encode("utf-8"))
                             else:
                                 print("Invalid command received from socket.")
                         elif data == "get_live_stats":
@@ -79,12 +82,7 @@ class Controller(RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPSwitchFeatures, CONFIG_DISPATCHER)
     def features_handler(self, ev):
-        '''
-        Handshake: Features Request Response Handler
 
-        Installs a low level (0) flow table modification that pushes packets to
-        the controller. This acts as a rule for flow-table misses.
-        '''
         datapath = ev.msg.datapath
         self.logger.info(f"Connected to switch {datapath.id}")
         ofproto = datapath.ofproto
@@ -128,13 +126,7 @@ class Controller(RyuApp):
 
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def packet_in_handler(self, ev):
-        '''
-        Packet In Event Handler
 
-        Takes packets provided by the OpenFlow packet in event structure and
-        floods them to all ports. This is the core functionality of the Ethernet
-        Hub.
-        '''
         msg = ev.msg
         datapath = msg.datapath
         ofproto = msg.datapath.ofproto
@@ -197,26 +189,12 @@ class Controller(RyuApp):
             return
         
 
-
-
-
     def __add_flow(self, datapath, priority, match, actions):
-        '''
-        Install Flow Table Modification
-
-        Takes a set of OpenFlow Actions and a OpenFlow Packet Match and creates
-        the corresponding Flow-Mod. This is then installed to a given datapath
-        at a given priority.
-        '''
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
         inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
         mod = parser.OFPFlowMod(datapath=datapath, priority=priority, match=match, instructions=inst)
         datapath.send_msg(mod)
-
-
-
-
 
 
     #Periodically request + post flow stats to the API to keep a record of bandwidth usage
@@ -231,10 +209,6 @@ class Controller(RyuApp):
         datapath.send_msg(request)
         
         threading.Timer(20, self.request_stats_periodically, args=[datapath]).start()
-
-
-   
-
 
 
 
@@ -268,9 +242,6 @@ class Controller(RyuApp):
                     response = requests.post("http://127.0.0.1:8000/update_historical_stats", json=payload)
                 except requests.exceptions.RequestException as e:
                     print(f"Error sending historical data: {e}")
-
-
-
     
     
     def request_live_stats(self, datapath):
@@ -353,7 +324,7 @@ class Controller(RyuApp):
         port_no = self.mac_to_port[dpid].get(dst_mac)
         if port_no is None:
             self.logger.error(f"Port for MAC {dst_mac} not found in mac_to_port table.")
-            return
+            return False
 
         self.logger.info(f"Setting queue {queue_id} for {dst_mac} on port {port_no} of switch {dpid}")
         parser = datapath.ofproto_parser
@@ -369,7 +340,38 @@ class Controller(RyuApp):
             datapath.send_msg(mod)
 
             self.logger.info(f"Queue {queue_id} successfully set for {dst_mac}")
+            
+            return True
 
         except Exception as e:
             print(f"Error setting queue for device: {e}")
-            return None  
+            return False  
+
+    
+    #Used for removing throttling or prioritisation from a device
+    def delete_device_queue(self, datapath, dst_mac):
+        # Delete a flow rule that previously assigned a queue to a destination MAC address
+        # This tells the switch to stop sending packets via that the specified queue, and instead use a default setting
+
+        dpid = datapath.id
+
+        port_no = self.mac_to_port[dpid].get(dst_mac)
+        if port_no is None:
+            self.logger.error(f"Port for MAC {dst_mac} not found in mac_to_port table.")
+            return False
+
+        self.logger.info(f"Deleting queue for {dst_mac} on port {port_no} of switch {dpid}")
+        parser = datapath.ofproto_parser
+        ofproto = datapath.ofproto
+
+        try:
+            match = parser.OFPMatch(eth_dst=dst_mac)
+            mod = parser.OFPFlowMod(datapath=datapath, match=match, priority=10, out_port=port_no, out_group=OFPG_ANY, command=ofproto.OFPFC_DELETE)
+            datapath.send_msg(mod)
+
+            self.logger.info(f"Queue successfully deleted for {dst_mac}")
+            return True
+
+        except Exception as e:
+            print(f"Error deleting queue for device: {e}")
+            return False

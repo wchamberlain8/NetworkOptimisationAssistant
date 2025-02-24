@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import socket
 import asyncio
+import re
 
 #initialise the FastAPI
 app = FastAPI()
@@ -19,7 +20,13 @@ mac_to_hostname = {
     "00:00:00:00:00:05": "Gaming PC"
 }
 
-hostname_to_mac = {v: k for k, v in mac_to_hostname.items()} #reverse dict for faster lookup, might need to change if we add in custom hostname naming through rasa!!
+hostname_to_mac = {}
+for mac, hostname in mac_to_hostname.items():
+    normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', hostname.lower()) #normalise the hostname to allow for different spellings etc.
+    hostname_to_mac[normalised_hostname] = mac
+
+throttled_devices = []
+prioritised_devices = []
 
 #data model if we want to pass some data to the API
 class InputModel(BaseModel):
@@ -51,7 +58,8 @@ async def mac_translation(input: InputModel):
         
     #else, if input == a hostname, try and find the relevant mac address translation, if not, return None
     else:
-        mac_address = hostname_to_mac.get(str)
+        normalised_input = re.sub(r'[^a-zA-Z0-9]', '', str.lower())
+        mac_address = hostname_to_mac.get(normalised_input)
         if mac_address:
             return {"mac": mac_address, "hostname": str}
         else:
@@ -134,8 +142,8 @@ async def get_live_stats():
 
     #using asyncio to wait for the top consumer to be calculated, then returning a result, if any
     try:
-        top_consumer = await asyncio.wait_for(top_consumer_cache.get(), timeout=5)
-        return {"top_consumer": top_consumer}
+        combined_data = await asyncio.wait_for(top_consumer_cache.get(), timeout=5)
+        return {"data": combined_data}
     except asyncio.TimeoutError:
         return {"message": "Timeout: The API did not receive stats from the controller in time"}
 
@@ -184,7 +192,15 @@ async def send_live_stats(data: dict):
             top_consumer = max(aggregate_mac_bandwidth, key=lambda x: aggregate_mac_bandwidth[x]["total_bandwidth"], default=None) #find the highest bandwidth consumer
             top_consumer = aggregate_mac_bandwidth[top_consumer]
             print(f"Top Consumer = {top_consumer}\n")
-            await top_consumer_cache.put(top_consumer) #put the top consumer into the cache
+
+            filtered_live_flows = [flow for flow in live_flows if flow.get("dst_mac") != top_consumer.get("dst_mac")]
+
+            combined_data = {
+                "top_consumer": top_consumer,
+                "live_flows": filtered_live_flows
+            }
+
+            await top_consumer_cache.put(combined_data) #put the top consumer into the cache
         except Exception as e:
             print(f"Error calculating top consumer: {e}")
     else:
@@ -199,20 +215,19 @@ async def throttle_device(json: dict):
 
     device = json.get("device")
 
-    print(f"Device: {device}")
-    print(f"Data: {json}")
-
     if device:
 
         #figure out whether the user's input was a mac address or a hostname
         if mac_address_check(device):
             mac = device
-            print("MAC ADDRESS DETECTED: ", mac)
         else:
-            print("HOSTNAME DETECTED: ", device)
-            mac = hostname_to_mac.get(device)
-            print("CONVERTED TO MAC: ", mac)
-            if not mac:
+            normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', device.lower())
+            mac = hostname_to_mac.get(normalised_hostname)
+
+            if mac in throttled_devices:
+                return {"message": "Present"}
+
+            if mac is None:
                 return {"message": "Unknown device"}
         
         #connect to the socket
@@ -221,14 +236,168 @@ async def throttle_device(json: dict):
             s.connect(("127.0.0.2", 9090))
             message = f"throttle_device={mac}"
             s.sendall(message.encode('utf-8'))
+            response = s.recv(1024).decode('utf-8')
             s.close()
-
-            return {"message": "success"}
+            
+            if response == "success":
+                throttled_devices.append(mac)
+                return {"message": "success"}
+            else:
+                return {"message": "error"}
+            
         except Exception as e:
             print(f"Error connecting to the controller: {e}")
     
     else:
         return {"message": "No device could be parsed from the JSON payload"}
+    
+#--------------------------------------------------------------------------------------------------------------------
+#/prioritise_device - Used for prioritising a specific device on the network
+#--------------------------------------------------------------------------------------------------------------------
+@app.post("/prioritise_device")
+async def prioritise_device(json: dict):
+
+    device = json.get("device")
+
+    if device:
+
+        print("WE HERE")
+
+        #figure out whether the user's input was a mac address or a hostname
+        if mac_address_check(device):
+            mac = device
+        else:
+            normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', device.lower())
+            mac = hostname_to_mac.get(normalised_hostname)
+
+            if mac in prioritised_devices:
+                return {"message": "Present"}
+
+            if mac is None:
+                return {"message": "Unknown device"}
+        
+        #connect to the socket
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(("127.0.0.2", 9090))
+            message = f"prioritise_device={mac}"
+            s.sendall(message.encode('utf-8'))
+            response = s.recv(1024).decode('utf-8')
+            s.close()
+
+            if response == "success":
+                prioritised_devices.append(mac)
+                return {"message": "success"}
+            else:
+                return {"message": "error"}
+        except Exception as e:
+            print(f"Error connecting to the controller: {e}")
+
+    else:
+        return {"message": "No device could be parsed from the JSON payload"}
+    
+#--------------------------------------------------------------------------------------------------------------------
+#/unthrottle_device - Used for unthrottling a specific device on the network
+#--------------------------------------------------------------------------------------------------------------------
+@app.post("/unthrottle_device")
+async def unthrottle_device(json: dict):
+
+    device = json.get("device")
+
+    if device:
+
+        #figure out whether the user's input was a mac address or a hostname
+        if mac_address_check(device):
+            mac = device
+        else:
+            normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', device.lower())
+            mac = hostname_to_mac.get(normalised_hostname)
+            
+            if mac not in throttled_devices:
+                return {"message": "not_Present"}
+            
+            if mac is None:
+                return {"message": "Unknown device"}
+        
+        #connect to the socket
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(("127.0.0.2", 9090))
+            message = f"unthrottle_device={mac}"
+            s.sendall(message.encode('utf-8'))
+            response = s.recv(1024).decode('utf-8')
+            s.close()
+
+            if response == "success":
+                throttled_devices.remove(mac)
+            else:
+                return {"message": "error"}
+
+        except Exception as e:
+            print(f"Error connecting to the controller: {e}")
+
+    else:
+        return {"message": "No device could be parsed from the JSON payload"}
+    
+#--------------------------------------------------------------------------------------------------------------------
+#/deprioritise_device - Used for deprioritisng a specific device on the network
+#--------------------------------------------------------------------------------------------------------------------
+@app.post("/deprioritise_device")
+async def deprioritise_device(json: dict):
+
+    device = json.get("device")
+
+    if device:
+
+        #figure out whether the user's input was a mac address or a hostname
+        if mac_address_check(device):
+            mac = device
+        else:
+            normalised_hostname = re.sub(r'[^a-zA-Z0-9]', '', device.lower())
+            mac = hostname_to_mac.get(normalised_hostname)
+
+            if mac not in prioritised_devices:
+                return {"message": "not_Present"}
+
+            if mac is None:
+                return {"message": "Unknown device"}
+        
+        #connect to the socket
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(("127.0.0.2", 9090))
+            message = f"deprioritise_device={mac}"
+            s.sendall(message.encode('utf-8'))
+            response = s.recv(1024).decode('utf-8')
+            s.close()
+
+            if response == "success":
+                prioritised_devices.remove(mac)
+                return {"message": "success"}   
+            else:
+                return {"message": "error"}
+
+        except Exception as e:
+            print(f"Error connecting to the controller: {e}")
+
+    else:
+        return {"message": "No device could be parsed from the JSON payload"}
+    
+#--------------------------------------------------------------------------------------------------------------------
+#/get_throttled_devices - Used for retrieving a list of all currently throttled devices
+#--------------------------------------------------------------------------------------------------------------------
+@app.get("/get_throttled_devices")
+async def get_throttled_devices():
+    print("Throttled Devices: ", throttled_devices)
+    return {"throttled_devices": throttled_devices}
+
+#--------------------------------------------------------------------------------------------------------------------
+#/get_prioritised_devices - Used for retrieving a list of all currently prioritised devices
+#--------------------------------------------------------------------------------------------------------------------
+@app.get("/get_prioritised_devices")
+async def get_prioritised_devices():
+    return {"prioritised_devices": prioritised_devices}
+
 
 
 #*****************************************

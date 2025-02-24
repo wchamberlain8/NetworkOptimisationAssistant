@@ -1,0 +1,19 @@
+{
+  "lookup": {
+    "eJyLrq6NBQAEOAGx": "action_listen",
+    "eJwtjFEKgDAMQ6/SA4jo764yxhhSoTg7WasIY3e3on9JXhLf+gDtqHjFtCgVdtA+ETnt6OA3mUSRrSu5qFhJse4O/DxOwdJTsFqIrKSExv3LwwDENlO7kS2upUa8j5w4vZ+9hweWKS78": "action_explain_terms",
+    "eJytjl0KwzAIx6/iAUrZXnOVECQMC9LUlOjGIPTuNesOsIe96f/jp7EfE/S90Qvzw7hKgH4NKHmjAN+lsBqJZ7VUUw8ZtS1AvM+35OpTqblIYmxM7sfhpwlYvGaO0RWX2pDee8mSB/P47fKnwYIDqH9+IJ1uEV8z": "action_listen",
+    "eJxljlEKAjEMRK+SAyzi+tmrlKWUJUKwTUsSRSi9uxH3a/3LMDMvE8dcYHTBV8q7UeMA43ckzhUDHKKQGrJntTRTD+2t9iyk7hlKXQPE9XLdFjgZt8Pw6lNRvIlsZIQOiWfIf9uBxP7ZfIk+0r1JwncvmfN31pzbBw2UR9M=": "action_compare_terms",
+    "eJzNj0EKwzAMBL+iB4TS9OivmGBMUEHUlo2lloLJ36s2OaWXHHOT2N3RyvdlgF4bvkKclQo76OsQOGZ0sC2JRJHNK6momGkuucZGYppiy6MDP16u0wA74bYJFn0KNksiKymhQfwe8p82ILFdVmsij3AvLeC7psjxW2s5Vn6F4o8o5/th+gD7dpDX": "action_listen",
+    "eJyLrq7VUaguKEoti09MLsnMz7NSqIYw4vMSc1OtFKCcnMziktQ8oNrS4tQioJrMPCC3xEqhoCgzvyizJLM4NT4ltSwzObW2NhYAVMwghw==": "action_prioritise_device",
+    "eJyLrq7VUaguKEoti09MLsnMz7NSqIYw4vMSc1OtFKCcnMziktQ8oNrS4tQioJrMPCC3xEqhoCgzvyizJLM4NT4ltSwzObWWOPMw9RFjdCwAKGFD5w==": "action_listen",
+    "eJyLrq7VUaguKEoti09MLsnMz7NSqIYw4vMSc1OtFKCcnMziktQ8oNrS4tQioJrMPCC3xEqhJKMov6QkJzU+JbUsMzm1tjYWABRMH7M=": "action_throttle_device",
+    "eJyLrq7VUaguKEoti09MLsnMz7NSqIYw4vMSc1OtFKCcnMziktQ8oNrS4tQioJrMPCC3xEqhJKMov6QkJzU+JbUsMzm1ljjT0HURNjYWAJCnQWs=": "action_listen",
+    "eJyLrq7VUaguKEoti09MLsnMz7NSqIYw4vMSc1OtFKCcnMziktQ8oNrS4tQioJrMPCC3xEohOT8vLzW5JL4kPz6xILO2NhYA8uwfMw==": "action_connect_to_api",
+    "eJyLrq7VUaguKEoti09MLsnMz7NSqIYw4vMSc1OtFKCcnMziktQ8oNrS4tQioJrMPCC3xEohOT8vLzW5JL4kPz6xILOWOMPQNBE0NBYAu0M/6w==": "action_listen",
+    "eJwtytEJgDAMRdFVMoATdBWRUMoDAxolif0p3d2A/t0LZx1zoXEbOtcWcmmh8QVrPVHon0M8oGkfh6URzY1ChjBBB+8JLpPGHjV8zu0FIMcjJg==": "action_retrieve_historic_data",
+    "eJyLrq7VUaguKEoti09MLsnMz7NSqIYw4vMSc1OtFKCcnMziktQ8oNrS4tQioJrMPCC3xEqhKLWkKDO1LDU+A6ggvygzOb64JLGkuJY4UzF1pySWJJJgSywACapLLw==": "action_listen",
+    "eJyLrq7VUaguKEoti09MLsnMz7NSqIYw4vMSc1OtFKCcnMziktQ8oNrS4tQioJrMPCC3xEqhKLWkKDO1LBWoAEgkJeallGemlGTU1sYCAB7SIvc=": "action_retrieve_bandwidth",
+    "eJyLrq7VUaguKEoti09MLsnMz7NSqIYw4vMSc1OtFKCcnMziktQ8oNrS4tQioJrMPCC3xEqhKLWkKDO1LBWoAEgkJeallGemlGTUEmcqXDdCI/E2xAIAxM9JKA==": "action_listen"
+  }
+}
