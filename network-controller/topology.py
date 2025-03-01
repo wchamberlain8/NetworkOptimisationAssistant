@@ -4,14 +4,8 @@ from mininet.net import Mininet
 from mininet.node import RemoteController, OVSSwitch
 import time
 
-
-#*******************************************************************************************************************************
-# THIS IS THE EXAMPLE MININET TOPOLOGY FROM THE RYU TUTORIAL, IT WILL BE CHANGED IN THE FUTURE, BUT IS USED FOR TESTING CURRENTLY
-#*******************************************************************************************************************************
-
 #usage: sudo mn --switch ovsk --controller remote --custom ./topology.py --topo testTopology
 #alternative usage: sudo python3 topology.py
-
 
 class TutorialTopology(Topo):
 
@@ -51,21 +45,9 @@ def main():
     net = Mininet(topo=topo, link=TCLink, controller=RemoteController, switch=OVSSwitch)
     net.start()
     net.interact()
-
-    time.sleep(60)
-    print("Rasa is now available...")
-    #simulateTraffic(net)
-
-    h1, h2 = net.get('h1', 'h2')
-    h3, h5 = net.get('h3', 'h5')
-
-    h1.cmd('iperf -s &')  # Start the server on h1
-    time.sleep(1)
-    h2.cmd(f'iperf -c {h1.IP()} -t 0 &')  # Start the client on h2
-    h5.cmd(f'iperf -c {h1.IP()} -t 0 &')  # Start the client with faster bandwidth on h5
     
 
-
+    
     net.stop()
 
 if __name__ == '__main__':

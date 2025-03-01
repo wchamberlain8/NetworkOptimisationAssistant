@@ -249,11 +249,10 @@ class ActionPrioritiseDevice(Action):
             response = requests.post(url, json={"device": device})
 
             if response.status_code == 200:
-                api_message = response.json().get("message")
 
-                if api_message == "success":
+                if response.json().get("message") == "success":
                     message = "Device has been prioritised successfully. To stop it being prioritised, simply ask me to 'Deprioritise (device name)'."
-                elif api_message == "Present":
+                elif response.json().get("message")  == "Present":
                     message = "Device is already being prioritised."
                 else:
                     message = "Device could not be prioritised. Please check the device name and try again. Alternatively, ask to view current devices to specify using MAC instead."
@@ -282,11 +281,10 @@ class ActionUnthrottleDevice(Action):
             response = requests.post(url, json={"device": device})
 
             if response.status_code == 200:
-                if response.json().get("message"):
-                    if response.json().get("message") == "success":
-                        message = "Device has been unthrottled successfully."
-                    elif response.json().get("message") == "not_Present":
-                        message = "Device is not currently being throttled."
+                if response.json().get("message") == "success":
+                    message = "Device has been unthrottled successfully."
+                elif response.json().get("message") == "not_Present":
+                    message = "Device is not currently being throttled."
                 else:
                     message = "Device could not be unthrottled. Please check the device name and try again. Alternatively, ask to view current devices to specify using MAC instead."
             else:

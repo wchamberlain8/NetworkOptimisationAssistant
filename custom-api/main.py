@@ -330,6 +330,7 @@ async def unthrottle_device(json: dict):
 
             if response == "success":
                 throttled_devices.remove(mac)
+                return {"message": "success"}
             else:
                 return {"message": "error"}
 
