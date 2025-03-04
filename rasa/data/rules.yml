@@ -2,11 +2,6 @@ version: "3.1"
 
 rules:
 
-- rule: Say goodbye anytime the user says goodbye
-  steps:
-  - intent: goodbye
-  - action: utter_goodbye
-
 - rule: Say 'I am a bot' anytime the user challenges
   steps:
   - intent: bot_challenge
@@ -23,7 +18,22 @@ rules:
    - intent: ask_for_help
    - action: utter_help
 
+- rule: throttle device
+  steps:
+   - intent: throttle_device
+   - action: action_throttle_device
+
 - rule: prioritise device
   steps:
    - intent: prioritise_device
    - action: action_prioritise_device
+
+- rule: unthrottle device
+  steps:
+   - intent: unthrottle_device
+   - action: action_unthrottle_device
+
+- rule: deprioritise device
+  steps:
+   - intent: deprioritise_device
+   - action: action_deprioritise_device

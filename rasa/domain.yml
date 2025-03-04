@@ -2,11 +2,8 @@ version: "3.1"
 
 intents:
   - greet
-  - goodbye
   - affirm
   - deny
-  - mood_great
-  - mood_unhappy
   - bot_challenge
   - ask_for_help
   - ask_for_explanation
@@ -30,10 +27,6 @@ responses:
      Type 'help' if you ever need help using me, or to see what functionality is available.
      \nWhat can I help you with today? 🚀"
 
-  utter_cheer_up:
-  - text: "Here is something to cheer you up:"
-    image: "https://i.imgur.com/nGF1K8f.jpg"
-
   utter_did_that_help:
   - text: "Did that help you?"
 
@@ -51,14 +44,8 @@ responses:
       • Educational Capabilities - you can ask for definitions or comparisons between common networking terms \n
       \t ○ Example usage - 'What is bandwidth?', 'What is the difference between LAN and WAN?' \n"
 
-  utter_happy:
-  - text: "Great, carry on!"
-
-  utter_goodbye:
-  - text: "Bye"
-
   utter_iamabot:
-  - text: "I am a bot, powered by Rasa."
+  - text: "I am NOA, a chatbot, powered by Rasa. To learn more about me, ask for help and i'll be happy to help!"
 
 actions:
   - action_explain_terms
