@@ -3,7 +3,7 @@ models/
 !models/latest-model.tar.gz
 
 # Ignore caches
-.rasa/cache/
+rasa/.rasa/cache/
 
 custom-api/__pycache__/
 network-controller/__pycache__/
