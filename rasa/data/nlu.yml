@@ -27,6 +27,9 @@ nlu:
     - correct
     - yep
     - yeah
+    - sure
+    - definitely
+    - password
 
 - intent: deny
   examples: |
@@ -39,6 +42,10 @@ nlu:
     - not really
     - nah
     - nope
+    - cancel
+    - never mind
+    - please cancel
+    - I changed my mind
 
 - intent: bot_challenge
   examples: |
@@ -150,7 +157,6 @@ nlu:
    - Remove the throttle from [00:00:00:00:00:01](device)
    - Unthrottle my [Gaming PC](device)
    - Please unthrottle [Smart TV](device)
-   - Unblock [XBOX](device)
 
 - intent: deprioritise_device
   examples: |
@@ -171,7 +177,6 @@ nlu:
     - List the devices that are being throttled
     - List throttled devices
     - Show me throttled devices
-    - List blocked devices
 
 - intent: retrieve_prioritised_devices
   examples: |
@@ -184,3 +189,30 @@ nlu:
     - List prioritised devices
     - Show me prioritised devices
     - List boosted devices
+
+- intent: retrieve_suspicious_devices
+  examples: |
+    - What devices are suspicious?
+    - Show me the devices that are suspicious
+    - What devices are currently suspicious?
+    - List devices that are suspicious
+    - List suspicious devices
+    - Show me suspicious devices
+    - Show me guest devices
+    - Display the guest list
+    - What guest devices are currently connected?
+    - List unknown devices
+    - Show all unknown devices
+    - List devices that are not recognised
+    - What unknown devices are connected?
+
+- intent: whitelist_device
+  examples: |
+    - Allow [00:00:00:00:00:01](device)
+    - Whitelist [00:00:00:00:00:02](device)
+    - Allow [00:00:00:00:00:03](device) to connect
+    - Unblock [00:00:00:00:00:04](device)
+    - Remove [00:00:00:00:00:05](device) from the guest list
+    - [00:00:00:00:00:06](device) is not suspicious
+    - Allow [00:00:00:00:00:07](device) to connect to the network
+    - Whitelist [00:00:00:00:00:08](device) to connect

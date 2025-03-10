@@ -413,9 +413,10 @@ class ActionRetrieveGuestList(Action):
 
             if response.status_code == 200:
                 data = response.json()
+                print(data)
                 guest_list = data.get("guest_list", [])
-                message += "☠️ These devices could be a newly connected device, a guest device or a potentially harmful device ☠️ \n"
-                message = "🌐 Here are the devices currently on the network that are not recognised: \n"
+                message = "☠️ These devices could be a newly connected device, a guest device or a potentially harmful device ☠️ \n"
+                message += "🌐 Here are the devices currently on the network that are not recognised: \n"
                 message += "  \n  "
 
                 for device in guest_list:
@@ -459,7 +460,7 @@ class ActionConfirmWhitelist(Action):
 class ActionAddToWhitelist(Action):
     
     def name (self) -> Text:
-        return "action_add_to_whitelist"
+        return "action_whitelist_device"
     
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
 

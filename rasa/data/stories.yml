@@ -62,3 +62,22 @@ stories:
   steps:
   - intent: retrieve_prioritised_devices
   - action: action_retrieve_prioritised_devices
+
+- story: retrieve guest list
+  steps:
+  - intent: retrieve_suspicious_devices
+  - action: action_retrieve_guest_list
+
+- story: whitelist device deny
+  steps:
+  - intent: whitelist_device
+  - action: action_confirm_whitelist
+  - intent: deny
+  - action: utter_operation_cancelled
+
+- story: whitelist device confirm
+  steps:
+  - intent: whitelist_device
+  - action: action_confirm_whitelist
+  - intent: affirm
+  - action: action_whitelist_device

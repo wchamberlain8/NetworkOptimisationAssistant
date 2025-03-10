@@ -405,16 +405,15 @@ async def get_prioritised_devices():
 async def send_guest_list(json: dict):
     global guest_list
     temp_list = json.get("guest_list", [])
-
-    guest_list = await guest_list.put(temp_list)
-
+    await guest_list.put(temp_list)
 
 #--------------------------------------------------------------------------------------------------------------------
 #/get_guest_list - Used for retrieving current guest or unknown devices on the network
 #--------------------------------------------------------------------------------------------------------------------
 @app.get("/get_guest_list")
 async def get_guest_list():
-    guest_list = []
+    global guest_list
+    guest_list_data = []
 
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -427,8 +426,8 @@ async def get_guest_list():
 
     #wait for a response to be posted and updated
     try:
-        guest_list = await asyncio.wait_for(guest_list.get(), timeout=5)
-        return {"guest_list": guest_list}
+        guest_list_data = await asyncio.wait_for(guest_list.get(), timeout=5)
+        return {"guest_list": guest_list_data}
     except asyncio.TimeoutError:
         return {"message": "Timeout: The API did not receive the guest list from the controller in time"}
     

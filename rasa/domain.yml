@@ -17,6 +17,9 @@ intents:
   - deprioritise_device
   - retrieve_throttled_devices
   - retrieve_prioritised_devices
+  - retrieve_suspicious_devices
+  - whitelist_device
+
 
 responses:
   utter_greet:
@@ -40,12 +43,15 @@ responses:
       • Throttle A Device \n
       \t ○ Example usage - 'Throttle the Smart TV' \n
       • Guest/Unknown Device Detection \n
-      \t ○ Example usage - 'What has connected to the network recently?' \n
+      \t ○ Example usage - 'List suspicious devices' \n
       • Educational Capabilities - you can ask for definitions or comparisons between common networking terms \n
       \t ○ Example usage - 'What is bandwidth?', 'What is the difference between LAN and WAN?' \n"
 
   utter_iamabot:
   - text: "I am NOA, a chatbot, powered by Rasa. To learn more about me, ask for help and i'll be happy to help!"
+
+  utter_operation_cancelled:
+  - text: "Got it. Operation has been cancelled ❌"
 
 actions:
   - action_explain_terms
@@ -59,6 +65,9 @@ actions:
   - action_deprioritise_device
   - action_retrieve_throttled_devices
   - action_retrieve_prioritised_devices
+  - action_retrieve_guest_list
+  - action_whitelist_device
+  - action_confirm_whitelist
 
 entities:
  - term

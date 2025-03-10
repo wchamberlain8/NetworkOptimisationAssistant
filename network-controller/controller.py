@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import subprocess
-from time import sleep, time
+import time
+from time import sleep
 from ryu.base.app_manager import RyuApp
 from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER, set_ev_cls
@@ -170,22 +171,34 @@ class Controller(RyuApp):
         
         if elapsed_time <= 60:
             vlan_id = self.VLAN_TRUSTED_TAG
-            self.logger.info(f"Auto-whitelisting {src_mac} since it is within grace period")
-            self.whitelist.append(src_mac)
+            if src_mac not in self.whitelist:
+                self.whitelist.append(src_mac)
+                #self.logger.info(f"Auto-whitelisting {src_mac} since it is within grace period")
+            if dst_mac not in self.whitelist:
+                self.whitelist.append(dst_mac)
+                #self.logger.info(f"Auto-whitelisting {dst_mac} since it is within grace period")
+
         else:
             vlan_id = self.VLAN_GUEST_TAG
             self.logger.info(f"Device {src_mac} detected after grace period, assigning to guest VLAN")
-            self.guest_list.append(src_mac)
+            if src_mac not in self.guest_list and src_mac not in self.whitelist:
+                self.guest_list.append(src_mac)
+
+        self.logger.info(f"Setting VLAN ID {vlan_id} for packets heading form {src_mac}")
 
         actions = [parser.OFPActionPushVlan(0x8100), parser.OFPActionSetField(vlan_vid = (vlan_id | ofproto.OFPVID_PRESENT)), 
                    parser.OFPActionSetQueue(0), parser.OFPActionOutput(out_port)]
 
         if msg.buffer_id == ofproto.OFP_NO_BUFFER:
             data = msg.data 
-        else: None
+        else: 
+            data = None
             
         out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id, in_port=in_port, actions=actions, data=data)
         datapath.send_msg(out)
+
+        self.logger.info(f"PRINT L2 SWITCH DICT {self.mac_to_port}")
+        self.logger.info(f"OUT PORT (SHOULD BE A NUMBER): {out_port}")
 
         if out_port != ofproto.OFPP_FLOOD:
             match = parser.OFPMatch(in_port=in_port, eth_src=src_mac, eth_dst=dst_mac)
@@ -199,6 +212,7 @@ class Controller(RyuApp):
         inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
         mod = parser.OFPFlowMod(datapath=datapath, priority=priority, match=match, instructions=inst)
         datapath.send_msg(mod)
+        self.logger.info(f"Flow added for switch {datapath.id}")
 
 
     #Periodically request + post flow stats to the API to keep a record of bandwidth usage
@@ -399,7 +413,7 @@ class Controller(RyuApp):
                 return False
             
             #remove from guest list, add to whitelist
-            del self.guest_list[mac]
+            self.guest_list.remove(mac)
             self.whitelist.append(mac)
 
             ofproto = datapath.ofproto
