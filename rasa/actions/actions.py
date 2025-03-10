@@ -114,7 +114,7 @@ class ActionRetrieveBandwidth(Action):
 
             if response.status_code == 200:
                 data = response.json()
-                combined_data = data.get("data", {}) #problem on second run??
+                combined_data = data.get("data", {})
                 print(combined_data)
                 timeout_message = data.get("message")
 

@@ -10,6 +10,7 @@ app = FastAPI()
 bandwidth_stats = {}
 historical_stats = {}
 top_consumer_cache = asyncio.Queue()
+guest_list = asyncio.Queue()
 
 #Hardcoded dictionary to hold the MAC address to hostname translations
 mac_to_hostname = {
@@ -261,8 +262,6 @@ async def prioritise_device(json: dict):
 
     if device:
 
-        print("WE HERE")
-
         #figure out whether the user's input was a mac address or a hostname
         if mac_address_check(device):
             mac = device
@@ -399,12 +398,75 @@ async def get_throttled_devices():
 async def get_prioritised_devices():
     return {"prioritised_devices": prioritised_devices}
 
+#--------------------------------------------------------------------------------------------------------------------
+#/update_guest_list - Used for updating the list of guest devices on the API (from the network)
+#--------------------------------------------------------------------------------------------------------------------
+@app.post("/send_guest_list")
+async def send_guest_list(json: dict):
+    global guest_list
+    temp_list = json.get("guest_list", [])
 
+    guest_list = await guest_list.put(temp_list)
+
+
+#--------------------------------------------------------------------------------------------------------------------
+#/get_guest_list - Used for retrieving current guest or unknown devices on the network
+#--------------------------------------------------------------------------------------------------------------------
+@app.get("/get_guest_list")
+async def get_guest_list():
+    guest_list = []
+
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(("127.0.0.2", 9090))
+        message = "get_guest_list"
+        s.sendall(message.encode('utf-8'))
+        s.close()
+    except Exception as e:
+        print(f"Error connecting to the controller: {e}")
+
+    #wait for a response to be posted and updated
+    try:
+        guest_list = await asyncio.wait_for(guest_list.get(), timeout=5)
+        return {"guest_list": guest_list}
+    except asyncio.TimeoutError:
+        return {"message": "Timeout: The API did not receive the guest list from the controller in time"}
+    
+#--------------------------------------------------------------------------------------------------------------------
+#/whitelist_device - Used for whitelisting a specific device on the network
+#--------------------------------------------------------------------------------------------------------------------
+@app.post("/whitelist_device")
+async def whitelist_device(json: dict):
+
+    device = json.get("device")
+
+    if mac_address_check(device):
+        mac = device
+
+        #connect to the socket
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(("127.0.0.2", 9090))
+            message = f"whitelist_device={mac}"
+            s.sendall(message.encode('utf-8'))
+            response = s.recv(1024).decode('utf-8')
+            s.close()
+
+            if response == "success":
+                return {"message": "success"}
+            else:
+                return {"message": "error"}
+            
+        except Exception as e:
+            print(f"Error connecting to the controller: {e}")
+    else:
+        return {"message": "Only MAC addresses can be whitelisted"}
 
 #*****************************************
 #           Helper Functions
 #*****************************************
 
+#Checks if the input is a valid MAC address
 def mac_address_check(mac):
     if ":" in mac:
         parts = mac.split(":")
@@ -420,6 +482,7 @@ def mac_address_check(mac):
         
     return True
 
+#Formats the bytes into a human readable format
 def format_bytes(bytes):
     if bytes >= 1_000_000_000:
         return f"{round(bytes / 1_000_000_000, 2)} GB"

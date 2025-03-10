@@ -1,10 +1,10 @@
 TERM_DICTIONARY = {
-    "broadband": "Broadband is ",
+    "broadband": "Broadband is  ",
     "bandwidth": "Bandwidth is the maximum rate of data transfer across a network",
     "ethernet": "Ethernet is a wired connection that is faster and less susceptible to interference",
     "wifi" : "Wi-Fi is a wireless connection that is very convenient but can be slower and less reliable due to interference or signal loss.",
     "IP address" : "An IP address is a unique identifier assigned to each device on a network, they allow for communication between devices.",
-    "MAC" : "A MAC address is .",
+    "MAC" : "A MAC address is a unique identifer for the hardware of a device.",
     "DNS" : "Domain Name System (DNS) is a system that translates lengthy, hard to remember IP addresses into domain names in a human-readable format.",
     "LAN" : "Local Area Network (LAN) is a network that connects devices in a small geographic area, such as a home or office.",
     "WAN" : "Wide Area Network (WAN) is a network that connects devices over a large geographic area, such as multiple offices or cities.",
