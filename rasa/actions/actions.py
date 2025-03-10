@@ -396,9 +396,96 @@ class ActionRetrievePrioritised(Action):
         dispatcher.utter_message(text=message)
         return []
 
+#--------------------------------------------------------------------------------------------------------------------
+#ActionRetrieveGuestList - Used to return the current list of guests or unknown devices on the network
+#--------------------------------------------------------------------------------------------------------------------
+class ActionRetrieveGuestList(Action):
+    
+    def name (self) -> Text:
+        return "action_retrieve_guest_list"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        url = "http://127.0.0.1:8000/get_guest_list"
+
+        try:
+            response = requests.get(url)
+
+            if response.status_code == 200:
+                data = response.json()
+                guest_list = data.get("guest_list", [])
+                message += "☠️ These devices could be a newly connected device, a guest device or a potentially harmful device ☠️ \n"
+                message = "🌐 Here are the devices currently on the network that are not recognised: \n"
+                message += "  \n  "
+
+                for device in guest_list:
+                    mac, hostname = mac_translation(device)
+                    if mac is None or hostname is None:
+                        continue
+                    message += f"• {hostname} (MAC: {mac}) \n"
+
+                message += " \n ⚠️ You can unblock these devices by asking me to add them to the whitelist - use with caution ⚠️ \n"
+
+            else:
+                message = f"Error: Received {response.status_code} from the API."
+        except Exception as e:
+            message = f"Exception occured in Rasa Actions: {str(e)}"
+
+        dispatcher.utter_message(text=message)
+        return []
+    
+#--------------------------------------------------------------------------------------------------------------------
+#ActionConfirmWhitelist - Used to confirm that a user wants to add a device to the whitelist
+#--------------------------------------------------------------------------------------------------------------------
+class ActionConfirmWhitelist(Action):
+    
+    def name (self) -> Text:
+        return "action_confirm_whitelist"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        device = tracker.get_slot("device")
+        message = f"Are you sure you want to add {device} to the whitelist?"
+        message += " \n This will allow the device to connect to the network without being blocked"
+        message += " \n This device has been marked as unknown, and so it may be potentially harmful"
+        message += " \n Enter the password to confirm, or type 'cancel' to abort."
+
+        dispatcher.utter_message(text=message)
+        return []
 
 #--------------------------------------------------------------------------------------------------------------------
-#Helper function which accesses the API to translate a MAC address to a hostname
+#ActionAddToWhitelist - Used to add a device to the whitelist
+#--------------------------------------------------------------------------------------------------------------------
+class ActionAddToWhitelist(Action):
+    
+    def name (self) -> Text:
+        return "action_add_to_whitelist"
+    
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+
+        url = "http://127.0.0.1:8000/whitelist_device"
+
+        try:
+            device = tracker.get_slot("device")
+            response = requests.post(url, json={"device": device})
+
+            if response.status_code == 200:
+                if response.json().get("message") == "success":
+                    message = "Device has been added to the whitelist successfully."
+                elif response.json().get("message") == "error":
+                    message = "Device could not be whitelisted. Is it already on the whitelist?"
+                elif response.json().get("message") == "wrong_type":
+                    message = "Device must be specfifed using a MAC address, ensure you are using the correct format (AA:BB:CC:DD:EE:FF)."
+                else:
+                    message = "Device could not be added to the whitelist. Please check the MAC address is correct and try again."
+            else:
+                message = f"Error: Received {response.status_code} from the API."
+
+        except Exception as e:
+            message = f"Exception occured in Rasa Actions: {str(e)}"
+
+#--------------------------------------------------------------------------------------------------------------------
+# Helper function which accesses the API to translate a MAC address to a hostname
 #--------------------------------------------------------------------------------------------------------------------
 
 def mac_translation(input_str):

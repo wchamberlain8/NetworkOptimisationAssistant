@@ -460,7 +460,7 @@ async def whitelist_device(json: dict):
         except Exception as e:
             print(f"Error connecting to the controller: {e}")
     else:
-        return {"message": "Only MAC addresses can be whitelisted"}
+        return {"message": "wrong_type"}
 
 #*****************************************
 #           Helper Functions
