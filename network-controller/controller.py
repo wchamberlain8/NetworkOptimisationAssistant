@@ -7,7 +7,7 @@ from ryu.controller import ofp_event
 from ryu.controller.handler import CONFIG_DISPATCHER, MAIN_DISPATCHER, set_ev_cls
 from ryu.ofproto.ofproto_v1_2 import OFPG_ANY
 from ryu.ofproto import ofproto_v1_3
-from ryu.lib.packet import *
+from ryu.lib.packet import vlan, ethernet, packet
 from ryu.lib.dpid import dpid_to_str
 import threading
 import socket
@@ -111,7 +111,7 @@ class Controller(RyuApp):
         threading.Thread(target=self.start_socket_server, args=(datapath,), daemon=True).start()
 
         #drop packets on the guest/unknown vlan
-        match = parser.OFPMatch(vlan_vid=(self.VLAN_GUEST_TAG | ofproto_v1_3.OFPVID_PRESENT))
+        match = parser.OFPMatch(vlan_vid=(ofproto_v1_3.OFPVID_PRESENT | self.VLAN_GUEST_TAG))
         actions = [] 
         self.__add_flow(datapath, 20, match, actions)
         
@@ -144,65 +144,55 @@ class Controller(RyuApp):
         dpid = msg.datapath.id #dpid = datapath id
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocol(ethernet.ethernet)
+        vlan_pkt = pkt.get_protocol(vlan.vlan)
+        
         if eth is None:
             return
+    
         src_mac = eth.src
+        dst_mac = eth.dst
+        in_port = msg.match['in_port']
+        
+        #self.logger.info(f"Packet in event received: src_mac={src_mac}")
+            
+        self.mac_to_port.setdefault(dpid, {})
+        self.mac_to_port[dpid][src_mac] = in_port #store that the device with src_mac reachable through in_port on dpid 
+        
+        #self.logger.info(f"Learned MAC {src_mac} on port {in_port} for switch {dpid}!")
 
         current_time = time.time()
         elapsed_time = current_time - self.start_time
+
+        out_port = self.mac_to_port[dpid].get(dst_mac, ofproto.OFPP_FLOOD)
         
-        self.logger.info(f"Packet in event received: src_mac={src_mac}")
+        actions = []
 
-        dst_mac = eth.dst
-        in_port = msg.match['in_port']
+        actions.append(parser.OFPActionSetQueue(0))
+        actions.append(parser.OFPActionOutput(out_port))
             
-        self.mac_to_port.setdefault(dpid, {})
-
-        self.mac_to_port[dpid][src_mac] = in_port #store that the device with src_mac reachable through in_port on dpid 
-        self.logger.info(f"Learned MAC {src_mac} on port {in_port} for switch {dpid}!")
-
-        if dst_mac in self.mac_to_port[dpid]: 
-            #if we know the route:
-            out_port = self.mac_to_port[dpid][dst_mac]
-            self.logger.info(f"MAC {dst_mac} known, forwarding to port {out_port}")
-        else:
-            #if we haven't seen the route before, flood until we do:
-            out_port = ofproto.OFPP_FLOOD
-        
-        if elapsed_time <= 60:
-            vlan_id = self.VLAN_TRUSTED_TAG
-            if src_mac not in self.whitelist:
-                self.whitelist.append(src_mac)
-                #self.logger.info(f"Auto-whitelisting {src_mac} since it is within grace period")
-            if dst_mac not in self.whitelist:
-                self.whitelist.append(dst_mac)
-                #self.logger.info(f"Auto-whitelisting {dst_mac} since it is within grace period")
-
-        else:
-            vlan_id = self.VLAN_GUEST_TAG
-            self.logger.info(f"Device {src_mac} detected after grace period, assigning to guest VLAN")
-            if src_mac not in self.guest_list and src_mac not in self.whitelist:
-                self.guest_list.append(src_mac)
-
-        self.logger.info(f"Setting VLAN ID {vlan_id} for packets heading form {src_mac}")
-
-        actions = [parser.OFPActionPushVlan(0x8100), parser.OFPActionSetField(vlan_vid = (vlan_id | ofproto.OFPVID_PRESENT)), 
-                   parser.OFPActionSetQueue(0), parser.OFPActionOutput(out_port)]
-
-        if msg.buffer_id == ofproto.OFP_NO_BUFFER:
-            data = msg.data 
-        else: 
-            data = None
-            
-        out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id, in_port=in_port, actions=actions, data=data)
+        out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id, in_port=in_port, actions=actions, data=msg.data if msg.buffer_id == ofproto.OFP_NO_BUFFER else None)
         datapath.send_msg(out)
 
-        self.logger.info(f"PRINT L2 SWITCH DICT {self.mac_to_port}")
-        self.logger.info(f"OUT PORT (SHOULD BE A NUMBER): {out_port}")
+        self.logger.info(f"Packet received - VLAN: {vlan_id if vlan_pkt else 'None'}")
+
 
         if out_port != ofproto.OFPP_FLOOD:
+
+            if elapsed_time <= 60:
+                vlan_id = self.VLAN_TRUSTED_TAG
+                if src_mac not in self.whitelist:
+                    self.whitelist.append(src_mac)
+            else:
+                vlan_id = self.VLAN_GUEST_TAG
+                if src_mac not in self.guest_list and src_mac not in self.whitelist:
+                    self.guest_list.append(src_mac)
+
+            actions.append(parser.OFPActionPushVlan(0x8100))
+            actions.append(parser.OFPActionSetField(vlan_vid = (vlan_id | ofproto.OFPVID_PRESENT)))
+
             match = parser.OFPMatch(in_port=in_port, eth_src=src_mac, eth_dst=dst_mac)
-            self.__add_flow(datapath, 1, match, actions)
+            self.logger.info("Attempting to add a new flow rule...")
+            self.__add_flow(datapath, 10, match, actions)
             return
         
 
