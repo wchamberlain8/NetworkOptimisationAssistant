@@ -111,7 +111,7 @@ class Controller(RyuApp):
         threading.Thread(target=self.start_socket_server, args=(datapath,), daemon=True).start()
 
         #drop packets on the guest/unknown vlan
-        match = parser.OFPMatch(vlan_vid=(ofproto_v1_3.OFPVID_PRESENT | self.VLAN_GUEST_TAG))
+        match = parser.OFPMatch(eth_type=0x8100, vlan_vid=(ofproto_v1_3.OFPVID_PRESENT | self.VLAN_GUEST_TAG))
         actions = [] 
         self.__add_flow(datapath, 20, match, actions)
         
@@ -173,9 +173,6 @@ class Controller(RyuApp):
         out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id, in_port=in_port, actions=actions, data=msg.data if msg.buffer_id == ofproto.OFP_NO_BUFFER else None)
         datapath.send_msg(out)
 
-        self.logger.info(f"Packet received - VLAN: {vlan_id if vlan_pkt else 'None'}")
-
-
         if out_port != ofproto.OFPP_FLOOD:
 
             if elapsed_time <= 60:
@@ -190,7 +187,7 @@ class Controller(RyuApp):
             actions.append(parser.OFPActionPushVlan(0x8100))
             actions.append(parser.OFPActionSetField(vlan_vid = (vlan_id | ofproto.OFPVID_PRESENT)))
 
-            match = parser.OFPMatch(in_port=in_port, eth_src=src_mac, eth_dst=dst_mac)
+            match = parser.OFPMatch(eth_dst=dst_mac)
             self.logger.info("Attempting to add a new flow rule...")
             self.__add_flow(datapath, 10, match, actions)
             return
@@ -319,7 +316,7 @@ class Controller(RyuApp):
             "--", "--id=@default", "create", "Queue", "other-config:max-rate=100000000",  # Default (Unrestricted)
             "--", "--id=@throttled", "create", "Queue", "other-config:max-rate=10000000",  # Throttled (10Mbps)
             "--", "--id=@priority", "create", "Queue", "other-config:max-rate=50000000", "other-config:priority=10"  # Priority (50Mbps, highest priority)
-        ]) #, stdout=subprocess.DEVNULL)
+        ], stdout=subprocess.DEVNULL)
 
 
     # Used for throttling or prioritising a device
@@ -357,7 +354,7 @@ class Controller(RyuApp):
 
     
     #Used for removing throttling or prioritisation from a device
-    def delete_device_queue(self, datapath, dst_mac):
+    def delete_device_queue(self, datapath, dst_mac, queue_id):
         # Delete a flow rule that previously assigned a queue to a destination MAC address
         # This tells the switch to stop sending packets via that the specified queue, and instead use a default setting
 

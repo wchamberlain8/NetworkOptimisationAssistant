@@ -15,10 +15,17 @@ guest_list = asyncio.Queue()
 #Hardcoded dictionary to hold the MAC address to hostname translations
 mac_to_hostname = {
     "00:00:00:00:00:01": "Laptop",
-    "00:00:00:00:00:02": "Smart TV",
+    "00:00:00:00:00:02": "Gaming PC",
     "00:00:00:00:00:03": "Ring Doorbell",
-    "00:00:00:00:00:04": "XBOX",
-    "00:00:00:00:00:05": "Gaming PC"
+    "00:00:00:00:00:04": "Gaming Console",
+    "00:00:00:00:00:05": "Smart TV",
+    "00:00:00:00:00:06": "Smart Lightswitch",
+    "00:00:00:00:00:07": "Security Camera",
+    "00:00:00:00:00:08": "Tablet",
+    "00:00:00:00:00:09": "Smart Thermostat",
+    "00:00:00:00:00:10": "Printer",
+    "00:00:00:00:00:11": "Smart Plug",
+    "aa:00:00:00:00:01": "Web Server",
 }
 
 hostname_to_mac = {}
