@@ -186,8 +186,7 @@ class ActionRetrieveHistoricBandwidth(Action):
                 message = f"🌐 Network has been online for {uptime}. Here's the usage data in that time:\n"
 
                 for device in data["stats"]:
-                    #src_mac = device["src_mac"]
-                    mac, hostname = mac_translation(device["src_mac"])
+                    mac, hostname = mac_translation(device["dst_mac"])
                     byte_count = device["overall_byte_count"]
                     message = message + f"\t • Device {hostname} (MAC: {mac}) has used {byte_count}\n"
 
