@@ -1,0 +1,146 @@
+[
+  {
+    "text": "What is broadband?",
+    "entities": [
+      {
+        "start": 8,
+        "end": 17,
+        "value": "broadband",
+        "entity": "term"
+      }
+    ],
+    "predicted_entities": []
+  },
+  {
+    "text": "Explain bandwidth",
+    "entities": [
+      {
+        "start": 8,
+        "end": 17,
+        "value": "bandwidth",
+        "entity": "term"
+      }
+    ],
+    "predicted_entities": []
+  },
+  {
+    "text": "What is a megabit?",
+    "entities": [
+      {
+        "start": 10,
+        "end": 17,
+        "value": "megabit",
+        "entity": "term"
+      }
+    ],
+    "predicted_entities": []
+  },
+  {
+    "text": "Explain what DNS is",
+    "entities": [
+      {
+        "start": 13,
+        "end": 16,
+        "value": "DNS",
+        "entity": "term"
+      }
+    ],
+    "predicted_entities": []
+  },
+  {
+    "text": "Can you explain what ethernet is?",
+    "entities": [
+      {
+        "start": 21,
+        "end": 29,
+        "value": "ethernet",
+        "entity": "term"
+      }
+    ],
+    "predicted_entities": []
+  },
+  {
+    "text": "Define NAT for me",
+    "entities": [
+      {
+        "start": 7,
+        "end": 10,
+        "value": "NAT",
+        "entity": "term"
+      }
+    ],
+    "predicted_entities": []
+  },
+  {
+    "text": "What is the point of a router?",
+    "entities": [
+      {
+        "start": 23,
+        "end": 29,
+        "value": "router",
+        "entity": "term"
+      }
+    ],
+    "predicted_entities": []
+  },
+  {
+    "text": "Can you tell me what WiFi is?",
+    "entities": [
+      {
+        "start": 21,
+        "end": 25,
+        "value": "WiFi",
+        "entity": "term"
+      }
+    ],
+    "predicted_entities": []
+  },
+  {
+    "text": "Define what a LAN is?",
+    "entities": [
+      {
+        "start": 14,
+        "end": 17,
+        "value": "LAN",
+        "entity": "term"
+      }
+    ],
+    "predicted_entities": []
+  },
+  {
+    "text": "What is HTTP?",
+    "entities": [
+      {
+        "start": 8,
+        "end": 12,
+        "value": "HTTP",
+        "entity": "term"
+      }
+    ],
+    "predicted_entities": []
+  },
+  {
+    "text": "What does a VPN do?",
+    "entities": [
+      {
+        "start": 12,
+        "end": 15,
+        "value": "VPN",
+        "entity": "term"
+      }
+    ],
+    "predicted_entities": []
+  },
+  {
+    "text": "Define port forwarding",
+    "entities": [
+      {
+        "start": 7,
+        "end": 22,
+        "value": "port forwarding",
+        "entity": "term"
+      }
+    ],
+    "predicted_entities": []
+  }
+]

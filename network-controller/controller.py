@@ -354,7 +354,7 @@ class Controller(RyuApp):
 
     
     #Used for removing throttling or prioritisation from a device
-    def delete_device_queue(self, datapath, dst_mac, queue_id):
+    def delete_device_queue(self, datapath, dst_mac):
         # Delete a flow rule that previously assigned a queue to a destination MAC address
         # This tells the switch to stop sending packets via that the specified queue, and instead use a default setting
 

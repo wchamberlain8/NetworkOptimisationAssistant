@@ -16,7 +16,7 @@ guest_list = asyncio.Queue()
 mac_to_hostname = {
     "00:00:00:00:00:01": "Laptop",
     "00:00:00:00:00:02": "Gaming PC",
-    "00:00:00:00:00:03": "Ring Doorbell",
+    "00:00:00:00:00:03": "Smart Doorbell",
     "00:00:00:00:00:04": "Gaming Console",
     "00:00:00:00:00:05": "Smart TV",
     "00:00:00:00:00:06": "Smart Lightswitch",

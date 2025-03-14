@@ -1,7 +1,0 @@
-{
-  "broadband": "broadband",
-  "bandwidth": "bandwidth",
-  "ethernet": "ethernet",
-  "nat": "NAT",
-  "wifi": "WiFi"
-}

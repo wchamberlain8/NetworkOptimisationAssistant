@@ -1,0 +1,35 @@
+{
+  "term": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1-score": 0.0,
+    "support": 13,
+    "confused_with": {}
+  },
+  "device": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 50,
+    "confused_with": {}
+  },
+  "micro avg": {
+    "precision": 1.0,
+    "recall": 0.7936507936507936,
+    "f1-score": 0.8849557522123894,
+    "support": 63
+  },
+  "macro avg": {
+    "precision": 0.5,
+    "recall": 0.5,
+    "f1-score": 0.5,
+    "support": 63
+  },
+  "weighted avg": {
+    "precision": 0.7936507936507936,
+    "recall": 0.7936507936507936,
+    "f1-score": 0.7936507936507936,
+    "support": 63
+  },
+  "accuracy": 0.9796875
+}

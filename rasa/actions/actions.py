@@ -216,12 +216,15 @@ class ActionThrottleDevice(Action):
             response = requests.post(url, json={"device": device})
 
             if response.status_code == 200:
-                if response.json().get("message") == "success":
-                    message = "Device has been throttled successfully. To stop it being throttled, simply ask me to 'Unthrottle (device name)'."
-                elif response.json().get("message") == "Present":
-                    message = "Device is already being throttled."
-                else:
-                    message = "Device could not be throttled. Please check the device name and try again. Alternatively, ask to view current devices to specify using MAC instead."
+                try:
+                    if response.json().get("message") == "success":
+                        message = "Device has been throttled successfully. To stop it being throttled, simply ask me to 'Unthrottle (device name)'."
+                    elif response.json().get("message") == "Present":
+                        message = "Device is already being throttled."
+                    else:
+                        message = "Device could not be throttled. Please check the device name and try again. Alternatively, ask to view current devices to specify using MAC instead."
+                except Exception as e:
+                    message = "A problem occured between the API and the Network, check they are both online and communicating then try again"
             else:
                 message = f"Error: Received {response.status_code} from the API."
         except Exception as e:
@@ -483,6 +486,9 @@ class ActionAddToWhitelist(Action):
 
         except Exception as e:
             message = f"Exception occured in Rasa Actions: {str(e)}"
+
+        dispatcher.utter_message(text=message)
+        return []
 
 #--------------------------------------------------------------------------------------------------------------------
 # Helper function which accesses the API to translate a MAC address to a hostname

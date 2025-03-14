@@ -1,6 +1,50 @@
 version: "3.1"
 
 nlu:
+
+- lookup: device
+  examples: |
+    - Laptop
+    - Gaming Console
+    - Smart TV
+    - Gaming PC
+    - Smart Doorbell
+    - Smart Lightswitch
+    - Security Camera
+    - Tablet
+    - Smart Thermostat
+    - Printer
+    - Smart Plug
+    - Web Server
+    - 00:00:00:00:00:01
+    - 00:00:00:00:00:02
+    - 00:00:00:00:00:03
+    - 00:00:00:00:00:04
+    - 00:00:00:00:00:05
+    - 00:00:00:00:00:06
+    - 00:00:00:00:00:07
+    - 00:00:00:00:00:08
+    - 00:00:00:00:00:09
+    - 00:00:00:00:00:10
+    - 00:00:00:00:00:11
+    - aa:00:00:00:00:01
+    - aa:aa:aa:aa:aa:aa
+
+- lookup: term
+  examples: |
+    - broadband
+    - HTTP
+    - megabit
+    - VPN
+    - router
+    - bandwidth
+    - ethernet
+    - NAT
+    - WiFi
+    - port forwarding
+    - DNS
+    - LAN
+
 - intent: greet
   examples: |
     - hey
@@ -76,24 +120,20 @@ nlu:
 - intent: ask_for_explanation
   examples: |
     - What is [broadband](term)?
-    - What is [HTTP](term)?
-    - What is a [megabit](term)?
     - What does a [VPN](term) do?
-    - What is the point of a [router](term)?
-    - Explain [bandwidth](term)
-    - Can you explain what [ethernet](term) is?
-    - Define [NAT](term) for me
-    - Can you tell me what [WiFi](term) is?
-    - Define [port forwarding](term)
-    - Explain what [DNS](term) is
-    - Define what a [LAN](term) is?
+    - What is the point of a (term)?
+    - Explain (term)
+    - Can you explain what (term) is?
+    - Can you tell me what (term) is?
+    - Define (term)
+    - Explain what (term) is
 
 - intent: ask_for_comparison
   examples: |
-    - What is the difference between [broadband](comparison_term1) and [bandwidth](comparison_term2)?
-    - Compare [ethernet](comparison_term1) and [WiFi](comparison_term2)
-    - What are the differences between [NAT](comparison_term1) and [firewall](comparison_term2)?
-    - Can you compare [WiFi](comparison_term1) and [ethernet](comparison_term2)?
+    - What is the difference between {term} and {term}?
+    - Compare {term} and {term}
+    - What are the differences between {term} and {term}?
+    - Can you compare {term} and {term}?
 
 - intent: connect_to_api
   examples: |
@@ -117,61 +157,50 @@ nlu:
     - What has used the most bandwidth?
     - What has been using up my bandwidth?
     - What devices have been using the most bandwidth?
-    - What has used the most bandwidth over time?
     - What devices have been using the most bandwidth historically?
-    - Show me the bandwidth usage history.
-    - How much bandwidth have my devices been using?
+    - Show me the bandwidth usage history
     - How much bandwidth have we used recently?
     - What was the bandwidth usage like recently?
 
 - intent: throttle_device
   examples: |
     - Can you slow down the internet for [Laptop](device)?
-    - Can you throttle the internet for [XBOX](device)?
-    - Can you limit the internet speed for [00:00:00:00:00:01](device)?
-    - Can you reduce the internet speed for [00:00:00:00:00:02](device)?
-    - Throttle the internet for [00:00:00:00:00:03](device)
-    - Throttle my [Smart TV](device)
-    - Please throttle my [Gaming PC](device)
-    - Limit the internet speed for [00:00:00:00:00:04](device)
-    - Throttle the [Gaming PC](device)
-    - Throttle [Smart TV](device)
+    - Can you throttle the internet for [Smart TV](device)?
+    - Can you limit the internet speed for (device)?
+    - Throttle my [tablet](device)
+    - Limit the internet speed for (device)
+    - Throttle (device)
 
 - intent: prioritise_device
   examples: |
     - Can you prioritise the internet for [Laptop](device)?
-    - Can you give more internet speed to [XBOX](device)?
-    - Can you increase the internet speed for [00:00:00:00:00:01](device)?
-    - Can you speed up the internet for [00:00:00:00:00:02](device)?
-    - Prioritise the internet for [00:00:00:00:00:03](device)
-    - Prioritise my [Smart TV](device)
-    - Please prioritise my [Gaming PC](device)
-    - Increase the internet speed for [00:00:00:00:00:04](device)
-    - Prioritise the [Gaming PC](device)
-    - Prioritise [Smart TV](device)
+    - Can you give more internet speed to [Gaming PC](device)?
+    - Can you speed up the internet for (device)?
+    - Prioritise the internet for (device)
+    - Increase the speed for (device)
+    - Prioritise [Gaming Console](device)
 
 - intent: unthrottle_device
   examples: |
-   - Unthrottle [Laptop](device)
-   - Unthrottle the [XBOX](device)
-   - Remove the throttle from [00:00:00:00:00:01](device)
-   - Unthrottle my [Gaming PC](device)
-   - Please unthrottle [Smart TV](device)
+    - Unthrottle [Tablet](device)
+    - Unthrottle the (device)
+    - Remove the throttle from [Smart TV](device)
+    - Unthrottle my (device)
+    - Please unthrottle (device)
 
 - intent: deprioritise_device
   examples: |
-   - Deprioritise [Laptop](device)
-   - Deprioritise the [XBOX](device)
-   - Remove the priority from [00:00:00:00:00:01](device)
-   - Deprioritise my [Gaming PC](device)
-   - Please deprioritise [Smart TV](device)
-   - Remove the priority from [XBOX](device)
+    - Deprioritise [Laptop](device)
+    - Deprioritise the (device)
+    - Remove the priority from [Gaming PC](device)
+    - Deprioritise my (device)
+    - Remove the priority from (device)
+
 
 - intent: retrieve_throttled_devices
   examples: |
     - What devices are being throttled?
     - Show me the devices that are being throttled
-    - Which devices have had their internet speed reduced?
     - What devices have had their internet speed limited?
     - What devices are currently being throttled?
     - List the devices that are being throttled
@@ -182,10 +211,7 @@ nlu:
   examples: |
     - What devices are being prioritised?
     - Show me the devices that are being prioritised
-    - Which devices have had their internet speed increased?
     - What devices have had their internet speed boosted?
-    - What devices are currently being prioritised?
-    - List the devices that are being prioritised
     - List prioritised devices
     - Show me prioritised devices
     - List boosted devices
@@ -194,25 +220,18 @@ nlu:
   examples: |
     - What devices are suspicious?
     - Show me the devices that are suspicious
-    - What devices are currently suspicious?
-    - List devices that are suspicious
     - List suspicious devices
-    - Show me suspicious devices
+    - Show me suspicious devices on the network
     - Show me guest devices
     - Display the guest list
     - What guest devices are currently connected?
     - List unknown devices
     - Show all unknown devices
-    - List devices that are not recognised
-    - What unknown devices are connected?
 
 - intent: whitelist_device
   examples: |
-    - Allow [00:00:00:00:00:01](device)
-    - Whitelist [00:00:00:00:00:02](device)
-    - Allow [00:00:00:00:00:03](device) to connect
-    - Unblock [00:00:00:00:00:04](device)
-    - Remove [00:00:00:00:00:05](device) from the guest list
-    - [00:00:00:00:00:06](device) is not suspicious
-    - Allow [00:00:00:00:00:07](device) to connect to the network
-    - Whitelist [00:00:00:00:00:08](device) to connect
+    - Whitelist [aa:aa:aa:aa:aa:aa](device)
+    - Allow [aa:aa:aa:aa:aa:aa](device) to connect
+    - Remove (device) from the guest list
+    - (device) is not suspicious
+    - [00:00:00:00:00:05](device) is a known device
