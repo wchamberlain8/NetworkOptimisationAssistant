@@ -1,6 +1,3 @@
-# Ignore any Rasa models, par the latest model
-models/
-!models/latest-model.tar.gz
 
 # Ignore caches
 rasa/.rasa/cache/
@@ -11,4 +8,4 @@ rasa/actions/__pycache__/
 
 # Ignore log files
 
-tmux-*.log
+tmux*.log
