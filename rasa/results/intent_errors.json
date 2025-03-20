@@ -1,114 +1,10 @@
 [
   {
-    "text": "indeed",
+    "text": "sure",
     "intent": "affirm",
-    "intent_prediction": {
-      "name": "ask_for_help",
-      "confidence": 0.4639493525028229
-    }
-  },
-  {
-    "text": "definitely",
-    "intent": "affirm",
-    "intent_prediction": {
-      "name": "ask_for_explanation",
-      "confidence": 0.7159402966499329
-    }
-  },
-  {
-    "text": "could you give me a hand?",
-    "intent": "ask_for_help",
-    "intent_prediction": {
-      "name": "prioritise_device",
-      "confidence": 0.701200008392334
-    }
-  },
-  {
-    "text": "Explain bandwidth",
-    "intent": "ask_for_explanation",
-    "intent_prediction": {
-      "name": "retrieve_historic_stats",
-      "confidence": 0.5907617807388306
-    }
-  },
-  {
-    "text": "Remove the throttle from 00:00:00:00:00:01",
-    "intent": "unthrottle_device",
-    "intent_prediction": {
-      "name": "whitelist_device",
-      "confidence": 0.778937816619873
-    }
-  },
-  {
-    "text": "Remove the priority from 00:00:00:00:00:01",
-    "intent": "deprioritise_device",
-    "intent_prediction": {
-      "name": "whitelist_device",
-      "confidence": 0.8892723917961121
-    }
-  },
-  {
-    "text": "List devices that are not recognised",
-    "intent": "retrieve_suspicious_devices",
-    "intent_prediction": {
-      "name": "retrieve_prioritised_devices",
-      "confidence": 0.8721359968185425
-    }
-  },
-  {
-    "text": "let's go",
-    "intent": "greet",
-    "intent_prediction": {
-      "name": "affirm",
-      "confidence": 0.2833282947540283
-    }
-  },
-  {
-    "text": "correct",
-    "intent": "affirm",
-    "intent_prediction": {
-      "name": "whitelist_device",
-      "confidence": 0.6583927869796753
-    }
-  },
-  {
-    "text": "I changed my mind",
-    "intent": "deny",
-    "intent_prediction": {
-      "name": "ask_for_help",
-      "confidence": 0.47017717361450195
-    }
-  },
-  {
-    "text": "i don't understand",
-    "intent": "ask_for_help",
     "intent_prediction": {
       "name": "deny",
-      "confidence": 0.857323169708252
-    }
-  },
-  {
-    "text": "Can you slow down the internet for Laptop?",
-    "intent": "throttle_device",
-    "intent_prediction": {
-      "name": "retrieve_live_bandwidth",
-      "confidence": 0.3105766475200653
-    }
-  },
-  {
-    "text": "Which devices have had their internet speed increased?",
-    "intent": "retrieve_prioritised_devices",
-    "intent_prediction": {
-      "name": "retrieve_throttled_devices",
-      "confidence": 0.8923108577728271
-    }
-  },
-  {
-    "text": "that sounds good",
-    "intent": "affirm",
-    "intent_prediction": {
-      "name": "greet",
-      "confidence": 0.9960229396820068
+      "confidence": 0.44682177901268005
     }
   },
   {
@@ -116,111 +12,119 @@
     "intent": "deny",
     "intent_prediction": {
       "name": "ask_for_help",
-      "confidence": 0.9911105632781982
+      "confidence": 0.9733352661132812
     }
   },
   {
-    "text": "Can you limit the internet speed for 00:00:00:00:00:01?",
+    "text": "Can you slow down the internet for Laptop?",
     "intent": "throttle_device",
     "intent_prediction": {
       "name": "prioritise_device",
-      "confidence": 0.7455175518989563
+      "confidence": 0.9709821343421936
     }
   },
   {
-    "text": "Limit the internet speed for 00:00:00:00:00:04",
+    "text": "Can you throttle the internet for Smart TV?",
     "intent": "throttle_device",
     "intent_prediction": {
-      "name": "prioritise_device",
-      "confidence": 0.799836277961731
+      "name": "unthrottle_device",
+      "confidence": 0.5711559653282166
     }
   },
   {
-    "text": "Can you give more internet speed to XBOX?",
+    "text": "Prioritise Gaming Console",
     "intent": "prioritise_device",
     "intent_prediction": {
-      "name": "ask_for_help",
-      "confidence": 0.47560733556747437
+      "name": "deprioritise_device",
+      "confidence": 0.7871415615081787
     }
   },
   {
-    "text": "Please unthrottle Smart TV",
-    "intent": "unthrottle_device",
-    "intent_prediction": {
-      "name": "throttle_device",
-      "confidence": 0.717775821685791
-    }
-  },
-  {
-    "text": "Which devices have had their internet speed reduced?",
+    "text": "What devices have had their internet speed limited?",
     "intent": "retrieve_throttled_devices",
     "intent_prediction": {
-      "name": "retrieve_prioritised_devices",
-      "confidence": 0.9186493754386902
+      "name": "throttle_device",
+      "confidence": 0.5869905352592468
     }
   },
   {
-    "text": "hi",
-    "intent": "greet",
+    "text": "What devices have had their internet speed boosted?",
+    "intent": "retrieve_prioritised_devices",
     "intent_prediction": {
-      "name": "deny",
-      "confidence": 0.9029462337493896
+      "name": "retrieve_historic_stats",
+      "confidence": 0.3841839134693146
     }
   },
   {
-    "text": "sure",
+    "text": "Remove (device) from the guest list",
+    "intent": "whitelist_device",
+    "intent_prediction": {
+      "name": "retrieve_suspicious_devices",
+      "confidence": 0.7756116390228271
+    }
+  },
+  {
+    "text": "definitely",
     "intent": "affirm",
     "intent_prediction": {
-      "name": "ask_for_help",
-      "confidence": 0.9943572878837585
+      "name": "ask_for_explanation",
+      "confidence": 0.8267431259155273
     }
   },
   {
-    "text": "Can you tell me what WiFi is?",
-    "intent": "ask_for_explanation",
+    "text": "not really",
+    "intent": "deny",
+    "intent_prediction": {
+      "name": "retrieve_historic_stats",
+      "confidence": 0.21055051684379578
+    }
+  },
+  {
+    "text": "I changed my mind",
+    "intent": "deny",
     "intent_prediction": {
       "name": "ask_for_help",
-      "confidence": 0.9656468629837036
+      "confidence": 0.8931198120117188
     }
   },
   {
-    "text": "Can you speed up the internet for 00:00:00:00:00:02?",
+    "text": "Throttle my tablet",
+    "intent": "throttle_device",
+    "intent_prediction": {
+      "name": "unthrottle_device",
+      "confidence": 0.315571665763855
+    }
+  },
+  {
+    "text": "Can you speed up the internet for (device)?",
     "intent": "prioritise_device",
     "intent_prediction": {
       "name": "throttle_device",
-      "confidence": 0.8179901838302612
+      "confidence": 0.975959062576294
     }
   },
   {
-    "text": "Unthrottle my Gaming PC",
-    "intent": "unthrottle_device",
-    "intent_prediction": {
-      "name": "throttle_device",
-      "confidence": 0.8791570663452148
-    }
-  },
-  {
-    "text": "Deprioritise my Gaming PC",
+    "text": "Remove the priority from Gaming PC",
     "intent": "deprioritise_device",
     "intent_prediction": {
       "name": "prioritise_device",
-      "confidence": 0.946785569190979
+      "confidence": 0.5512125492095947
     }
   },
   {
-    "text": "n",
-    "intent": "deny",
+    "text": "indeed",
+    "intent": "affirm",
     "intent_prediction": {
-      "name": "affirm",
-      "confidence": 0.4987240433692932
+      "name": "deny",
+      "confidence": 0.49724408984184265
     }
   },
   {
-    "text": "What is HTTP?",
-    "intent": "ask_for_explanation",
+    "text": "i don't understand",
+    "intent": "ask_for_help",
     "intent_prediction": {
-      "name": "retrieve_live_bandwidth",
-      "confidence": 0.4973614811897278
+      "name": "deny",
+      "confidence": 0.9088011384010315
     }
   },
   {
@@ -228,15 +132,103 @@
     "intent": "ask_for_explanation",
     "intent_prediction": {
       "name": "ask_for_help",
-      "confidence": 0.9795647859573364
+      "confidence": 0.998141884803772
     }
   },
   {
-    "text": "Can you reduce the internet speed for 00:00:00:00:00:02?",
+    "text": "Throttle (device)",
     "intent": "throttle_device",
     "intent_prediction": {
+      "name": "unthrottle_device",
+      "confidence": 0.7919397354125977
+    }
+  },
+  {
+    "text": "Remove the throttle from Smart TV",
+    "intent": "unthrottle_device",
+    "intent_prediction": {
+      "name": "throttle_device",
+      "confidence": 0.9614883661270142
+    }
+  },
+  {
+    "text": "Display the guest list",
+    "intent": "retrieve_suspicious_devices",
+    "intent_prediction": {
+      "name": "whitelist_device",
+      "confidence": 0.9161267280578613
+    }
+  },
+  {
+    "text": "(device) is not suspicious",
+    "intent": "whitelist_device",
+    "intent_prediction": {
+      "name": "retrieve_suspicious_devices",
+      "confidence": 0.991430938243866
+    }
+  },
+  {
+    "text": "hi",
+    "intent": "greet",
+    "intent_prediction": {
+      "name": "ask_for_help",
+      "confidence": 0.40419742465019226
+    }
+  },
+  {
+    "text": "moin",
+    "intent": "greet",
+    "intent_prediction": {
+      "name": "deny",
+      "confidence": 0.9184046387672424
+    }
+  },
+  {
+    "text": "correct",
+    "intent": "affirm",
+    "intent_prediction": {
       "name": "prioritise_device",
-      "confidence": 0.6219250559806824
+      "confidence": 0.19620823860168457
+    }
+  },
+  {
+    "text": "What is broadband?",
+    "intent": "ask_for_explanation",
+    "intent_prediction": {
+      "name": "ask_for_help",
+      "confidence": 0.6406954526901245
+    }
+  },
+  {
+    "text": "Can you give more internet speed to Gaming PC?",
+    "intent": "prioritise_device",
+    "intent_prediction": {
+      "name": "ask_for_help",
+      "confidence": 0.46678757667541504
+    }
+  },
+  {
+    "text": "of course",
+    "intent": "affirm",
+    "intent_prediction": {
+      "name": "ask_for_explanation",
+      "confidence": 0.3820277452468872
+    }
+  },
+  {
+    "text": "that sounds good",
+    "intent": "affirm",
+    "intent_prediction": {
+      "name": "greet",
+      "confidence": 0.954340398311615
+    }
+  },
+  {
+    "text": "could you give me a hand?",
+    "intent": "ask_for_help",
+    "intent_prediction": {
+      "name": "prioritise_device",
+      "confidence": 0.6992863416671753
     }
   }
 ]

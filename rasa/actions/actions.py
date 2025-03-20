@@ -62,14 +62,20 @@ class ActionExplainTerms(Action):
     
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         
+        start_time = time.time()
+        
         term = tracker.get_slot("term")
 
         if term:
             explanation = TERM_DICTIONARY.get(term.lower(), "Sorry, I don't know what that is.")
-            dispatcher.utter_message(text=explanation)
+            message = f"❓ {explanation}"
         else:
-            dispatcher.utter_message(text="Please provide a networking term you would like explaining.")
+            message = "Please provide a networking term you would like explaining."
 
+        end_time = time.time()
+        elapsed_time = (end_time - start_time) * 1000
+        message += f"\nOperation took {elapsed_time:.3f} ms."
+        dispatcher.utter_message(text=message)
         return []
     
 
@@ -123,7 +129,6 @@ class ActionRetrieveBandwidth(Action):
                     
                 if top_consumer or live_flows:
                     end_time = time.time()
-                    elapsed_time = end_time - start_time
                     message = "🌐 Here are all the current live flows on the network: \n"
                     message += "  \n  "
 
@@ -145,7 +150,7 @@ class ActionRetrieveBandwidth(Action):
                                 top_consumer_bw = f"{top_consumer_bw:.2f}"
                             
                             message += "  \n  "
-                            message += f"📈 The top consumer is {hostname} (MAC: {mac}) using {top_consumer_bw} Mbps. Operation took {elapsed_time:.3f} seconds."
+                            message += f"📈 The top consumer is {hostname} (MAC: {mac}) using {top_consumer_bw} Mbps."
 
 
                 elif timeout_message:
@@ -159,6 +164,9 @@ class ActionRetrieveBandwidth(Action):
         except Exception as e:
             message = f"Exception occurred in Rasa Actions: {str(e)}"
 
+        end_time = time.time()
+        elapsed_time = (end_time - start_time) * 1000
+        message += f"\nOperation took {elapsed_time:.3f} ms."
         dispatcher.utter_message(text=message)
         return []
 
@@ -176,6 +184,7 @@ class ActionRetrieveHistoricBandwidth(Action):
         url = "http://127.0.0.1:8000/get_historic_stats"
 
         try:
+            start_time = time.time()
             response = requests.get(url)
 
             if response.status_code == 200:
@@ -195,6 +204,9 @@ class ActionRetrieveHistoricBandwidth(Action):
         except Exception as e:
             message = f"Exception occured in Rasa Actions: {str(e)}"
 
+        end_time = time.time()
+        elapsed_time = (end_time - start_time) * 1000
+        message += f"\nOperation took {elapsed_time:.3f} ms."
         dispatcher.utter_message(text=message)
         return []
     
@@ -212,6 +224,7 @@ class ActionThrottleDevice(Action):
         url = "http://127.0.0.1:8000/throttle_device"
 
         try:
+            start_time = time.time()
             device = tracker.get_slot("device")
             response = requests.post(url, json={"device": device})
 
@@ -230,6 +243,9 @@ class ActionThrottleDevice(Action):
         except Exception as e:
             message = f"Exception occured in Rasa Actions: {str(e)}"
 
+        end_time = time.time()
+        elapsed_time = (end_time - start_time) * 1000
+        message += f"\nOperation took {elapsed_time:.3f} ms."
         dispatcher.utter_message(text=message)
         return []
     
@@ -246,6 +262,7 @@ class ActionPrioritiseDevice(Action):
         url = "http://127.0.0.1:8000/prioritise_device"
         
         try:
+            start_time = time.time()
             device = tracker.get_slot("device")
 
             response = requests.post(url, json={"device": device})
@@ -263,6 +280,9 @@ class ActionPrioritiseDevice(Action):
         except Exception as e:
             message = f"Exception occured in Rasa Actions: {str(e)}"
 
+        end_time = time.time()
+        elapsed_time = (end_time - start_time) * 1000
+        message += f"\nOperation took {elapsed_time:.3f} ms."
         dispatcher.utter_message(text=message)
         return []
 
@@ -279,6 +299,7 @@ class ActionUnthrottleDevice(Action):
         url = "http://127.0.0.1:8000/unthrottle_device"
 
         try:
+            start_time = time.time()
             device = tracker.get_slot("device")
             response = requests.post(url, json={"device": device})
 
@@ -294,6 +315,9 @@ class ActionUnthrottleDevice(Action):
         except Exception as e:
             message = f"Exception occured in Rasa Actions: {str(e)}"
 
+        end_time = time.time()
+        elapsed_time = (end_time - start_time) * 1000
+        message += f"\nOperation took {elapsed_time:.3f} ms."
         dispatcher.utter_message(text=message)
         return []
 
@@ -310,6 +334,7 @@ class ActionDeprioritiseDevice(Action):
         url = "http://127.0.0.1:8000/deprioritise_device"
 
         try:
+            start_time = time.time()
             device = tracker.get_slot("device")
             response = requests.post(url, json={"device": device})
 
@@ -325,6 +350,9 @@ class ActionDeprioritiseDevice(Action):
         except Exception as e:
             message = f"Exception occured in Rasa Actions: {str(e)}"
 
+        end_time = time.time()
+        elapsed_time = (end_time - start_time) * 1000
+        message += f"\nOperation took {elapsed_time:.3f} ms."
         dispatcher.utter_message(text=message)
         return []
 
@@ -341,6 +369,7 @@ class ActionRetrieveThrottled(Action):
         url = "http://127.0.0.1:8000/get_throttled_devices"
 
         try:
+            start_time = time.time()
             response = requests.get(url)
 
             if response.status_code == 200:
@@ -360,6 +389,9 @@ class ActionRetrieveThrottled(Action):
         except Exception as e:
             message = f"Exception occured in Rasa Actions: {str(e)}"
 
+        end_time = time.time()
+        elapsed_time = (end_time - start_time) * 1000
+        message += f"\nOperation took {elapsed_time:.3f} ms."
         dispatcher.utter_message(text=message)
         return []
     
@@ -376,6 +408,7 @@ class ActionRetrievePrioritised(Action):
         url = "http://127.0.0.1:8000/get_prioritised_devices"
 
         try:
+            start_time = time.time()
             response = requests.get(url)
 
             if response.status_code == 200:
@@ -395,6 +428,9 @@ class ActionRetrievePrioritised(Action):
         except Exception as e:
             message = f"Exception occured in Rasa Actions: {str(e)}"
 
+        end_time = time.time()
+        elapsed_time = (end_time - start_time) * 1000
+        message += f"\nOperation took {elapsed_time:.3f} ms."
         dispatcher.utter_message(text=message)
         return []
 
@@ -411,6 +447,7 @@ class ActionRetrieveGuestList(Action):
         url = "http://127.0.0.1:8000/get_guest_list"
 
         try:
+            start_time = time.time()
             response = requests.get(url)
 
             if response.status_code == 200:
@@ -434,6 +471,9 @@ class ActionRetrieveGuestList(Action):
         except Exception as e:
             message = f"Exception occured in Rasa Actions: {str(e)}"
 
+        end_time = time.time()
+        elapsed_time = (end_time - start_time) * 1000
+        message += f"\nOperation took {elapsed_time:.3f} ms."
         dispatcher.utter_message(text=message)
         return []
     
@@ -469,6 +509,7 @@ class ActionAddToWhitelist(Action):
         url = "http://127.0.0.1:8000/whitelist_device"
 
         try:
+            start_time = time.time()
             device = tracker.get_slot("device")
             response = requests.post(url, json={"device": device})
 
@@ -487,6 +528,9 @@ class ActionAddToWhitelist(Action):
         except Exception as e:
             message = f"Exception occured in Rasa Actions: {str(e)}"
 
+        end_time = time.time()
+        elapsed_time = (end_time - start_time) * 1000
+        message += f"\nOperation took {elapsed_time:.3f} ms."
         dispatcher.utter_message(text=message)
         return []
 

@@ -1,5 +1,5 @@
 TERM_DICTIONARY = {
-    "broadband": "Broadband is  ",
+    "broadband": "Broadband is a high-speed internet connection that is always on.",
     "bandwidth": "Bandwidth is the maximum rate of data transfer across a network",
     "ethernet": "Ethernet is a wired connection that is faster and less susceptible to interference",
     "wifi" : "Wi-Fi is a wireless connection that is very convenient but can be slower and less reliable due to interference or signal loss.",

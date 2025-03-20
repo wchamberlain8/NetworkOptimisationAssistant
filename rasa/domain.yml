@@ -40,10 +40,14 @@ responses:
       \t ○ Example usage - 'What is using the most bandwidth currently?' \n
       • Preview Historic Bandwidth Usage - see what devices have used the most bandwidth recently \n
       \t ○ Example usage - 'What has used the most bandwidth recently?' \n
-      • Throttle A Device \n
+      • Throttle A Device - limit the amount of bandwidth a device is using \n
       \t ○ Example usage - 'Throttle the Smart TV' \n
-      • Guest/Unknown Device Detection \n
+      • Prioritise A Device - allow a device to have more priority over access to bandwidth \n
+      \t ○ Example usage - 'Prioritise my Work Laptop' \n
+      • Guest/Unknown Device Detection - discover what has been quarantined on your network \n
       \t ○ Example usage - 'List suspicious devices' \n
+      • Whitelist A Device - trust a device on the network, removing it from quarantine \n
+      \t ○ Example usage - 'Whitelist the Smart Plug' \n
       • Educational Capabilities - you can ask for definitions or comparisons between common networking terms \n
       \t ○ Example usage - 'What is bandwidth?', 'What is the difference between LAN and WAN?' \n"
 
