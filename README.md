@@ -1,13 +1,12 @@
 # NetworkOptimisationAssistant (NOA)
 
 ## Description
-Network Optimisation Assistant (NOA) is a proof-of-concept design of a voice assistant that can monitor and optimise bandwidth usage in home networks. The user will be able to talk to the assistant, in order to gain a deeper understanding of their home network and perform technical funcitons without needing to understand how or why it works.
+Network Optimisation Assistant (NOA) is a proof-of-concept design of a virtual assistant that can monitor and optimise bandwidth usage in home networks. The user will be able to talk to the assistant, in order to gain a deeper understanding of their home network and perform technical funcitons without needing to understand how or why it works.
 
 The main requirements that this assistant provides includes:
 * Bandwidth Monitoring
-* Network Path Optimisation
-* Guest Network Management
-* Access Control Levels
+* Network Optimisation
+* Unknown Device Management
 * Educational Capabilities
 
 This is part of my Final Year Project/Dissertation at Lancaster University.
