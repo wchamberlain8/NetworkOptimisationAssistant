@@ -10,7 +10,7 @@ app = FastAPI()
 bandwidth_stats = {}
 historical_stats = {}
 top_consumer_cache = asyncio.Queue()
-guest_list = asyncio.Queue()
+guest_list = {}
 
 #Hardcoded dictionary to hold the MAC address to hostname translations
 mac_to_hostname = {
@@ -202,6 +202,8 @@ async def send_live_stats(data: dict):
                 "top_consumer": top_consumer,
                 "live_flows": filtered_live_flows
             }
+
+            print(combined_data)
 
             await top_consumer_cache.put(combined_data) #put the top consumer into the cache
         except Exception as e:
@@ -401,13 +403,13 @@ async def get_prioritised_devices():
     return {"prioritised_devices": prioritised_devices}
 
 #--------------------------------------------------------------------------------------------------------------------
-#/update_guest_list - Used for updating the list of guest devices on the API (from the network)
+#/update_guest_list - Used for keeping a copy of suspicious devices, in case of a network failure
 #--------------------------------------------------------------------------------------------------------------------
-@app.post("/send_guest_list")
-async def send_guest_list(json: dict):
+@app.post("/update_guest_list")
+async def update_guest_list(json: dict):
     global guest_list
     temp_list = json.get("guest_list", [])
-    await guest_list.put(temp_list)
+    guest_list = temp_list
 
 #--------------------------------------------------------------------------------------------------------------------
 #/get_guest_list - Used for retrieving current guest or unknown devices on the network
@@ -415,23 +417,7 @@ async def send_guest_list(json: dict):
 @app.get("/get_guest_list")
 async def get_guest_list():
     global guest_list
-    guest_list_data = []
-
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect(("127.0.0.2", 9090))
-        message = "get_guest_list"
-        s.sendall(message.encode('utf-8'))
-        s.close()
-    except Exception as e:
-        print(f"Error connecting to the controller: {e}")
-
-    #wait for a response to be posted and updated
-    try:
-        guest_list_data = await asyncio.wait_for(guest_list.get(), timeout=5)
-        return {"guest_list": guest_list_data}
-    except asyncio.TimeoutError:
-        return {"message": "Timeout: The API did not receive the guest list from the controller in time"}
+    return {"guest_list": guest_list}
     
 #--------------------------------------------------------------------------------------------------------------------
 #/whitelist_device - Used for whitelisting a specific device on the network

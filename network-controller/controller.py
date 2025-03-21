@@ -101,7 +101,7 @@ class Controller(RyuApp):
         match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
 
-        #self.get_guest_list()
+        self.get_guest_list()
 
         self.request_ports(datapath)
 
