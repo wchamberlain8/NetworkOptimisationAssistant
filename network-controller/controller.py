@@ -19,8 +19,6 @@ class Controller(RyuApp):
     mac_to_port = {} #dictionary to hold the address -> port translations
     whitelist = []
     guest_list = []
-    VLAN_GUEST_TAG = 10
-    VLAN_TRUSTED_TAG = 20
 
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
 
@@ -103,21 +101,17 @@ class Controller(RyuApp):
         match = parser.OFPMatch()
         actions = [parser.OFPActionOutput(ofproto.OFPP_CONTROLLER, ofproto.OFPCML_NO_BUFFER)]
 
+        self.get_guest_list()
+
         self.request_ports(datapath)
 
         self.logger.info("Handshake taken place with {}".format(dpid_to_str(datapath.id)))
         self.__add_flow(datapath, 0, match, actions)
         self.request_stats_periodically(datapath)
         threading.Thread(target=self.start_socket_server, args=(datapath,), daemon=True).start()
-
-        #drop packets on the guest/unknown vlan
-        match = parser.OFPMatch(eth_type=0x8100, vlan_vid=(ofproto_v1_3.OFPVID_PRESENT | self.VLAN_GUEST_TAG))
-        actions = [] 
-        self.__add_flow(datapath, 20, match, actions)
         
 
     def request_ports(self, datapath):
-        ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
         request = parser.OFPPortDescStatsRequest(datapath, 0)
         datapath.send_msg(request)
@@ -134,6 +128,9 @@ class Controller(RyuApp):
             self.logger.info(datapath.id)
 
 
+
+
+
     @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
     def packet_in_handler(self, ev):
 
@@ -144,7 +141,6 @@ class Controller(RyuApp):
         dpid = msg.datapath.id #dpid = datapath id
         pkt = packet.Packet(msg.data)
         eth = pkt.get_protocol(ethernet.ethernet)
-        vlan_pkt = pkt.get_protocol(vlan.vlan)
         
         if eth is None:
             return
@@ -153,12 +149,10 @@ class Controller(RyuApp):
         dst_mac = eth.dst
         in_port = msg.match['in_port']
         
-        #self.logger.info(f"Packet in event received: src_mac={src_mac}")
-            
         self.mac_to_port.setdefault(dpid, {})
         self.mac_to_port[dpid][src_mac] = in_port #store that the device with src_mac reachable through in_port on dpid 
         
-        #self.logger.info(f"Learned MAC {src_mac} on port {in_port} for switch {dpid}!")
+
 
         current_time = time.time()
         elapsed_time = current_time - self.start_time
@@ -166,32 +160,32 @@ class Controller(RyuApp):
         out_port = self.mac_to_port[dpid].get(dst_mac, ofproto.OFPP_FLOOD)
         
         actions = []
-
         actions.append(parser.OFPActionSetQueue(0))
         actions.append(parser.OFPActionOutput(out_port))
-            
+        
         out = parser.OFPPacketOut(datapath=datapath, buffer_id=msg.buffer_id, in_port=in_port, actions=actions, data=msg.data if msg.buffer_id == ofproto.OFP_NO_BUFFER else None)
         datapath.send_msg(out)
 
         if out_port != ofproto.OFPP_FLOOD:
 
-            if elapsed_time <= 60:
-                vlan_id = self.VLAN_TRUSTED_TAG
-                if src_mac not in self.whitelist:
-                    self.whitelist.append(src_mac)
-            else:
-                vlan_id = self.VLAN_GUEST_TAG
-                if src_mac not in self.guest_list and src_mac not in self.whitelist:
+            if elapsed_time > 60 and src_mac not in self.whitelist:
+                if src_mac not in self.guest_list:
                     self.guest_list.append(src_mac)
-
-            actions.append(parser.OFPActionPushVlan(0x8100))
-            actions.append(parser.OFPActionSetField(vlan_vid = (vlan_id | ofproto.OFPVID_PRESENT)))
+                    self.logger.info(f"Device {src_mac} marked as suspicious")
+            if src_mac in self.guest_list:
+                actions = []
+            else:
+                self.whitelist.append(src_mac)
+                self.logger.info(f"Device {src_mac} whitelisted")
 
             match = parser.OFPMatch(eth_dst=dst_mac)
             self.logger.info("Attempting to add a new flow rule...")
             self.__add_flow(datapath, 10, match, actions)
             return
         
+
+
+
 
     def __add_flow(self, datapath, priority, match, actions):
         ofproto = datapath.ofproto
@@ -214,8 +208,24 @@ class Controller(RyuApp):
         datapath.send_msg(request)
         
         threading.Timer(20, self.request_stats_periodically, args=[datapath]).start()
+        threading.Timer(60, self.update_guest_list).start()
 
+    def update_guest_list(self):
+        try:
+            payload = {"guest_list": self.guest_list}
+            requests.post("http://127.0.0.1:8000/update_guest_list", json=payload)
+        except requests.exceptions.RequestException as e:
+            print(f"Error sending guest list to the API: {e}")
 
+    def get_guest_list(self):
+        try:
+            response = requests.get("http://127.0.0.1:8000/get_guest_list")
+            if response.status_code == 200:
+                temp_list = response.json().get("guest_list")
+                if temp_list:
+                    self.guest_list = temp_list
+        except Exception as e:
+            print(f"Error sending guest list to the API: {e}")
 
     @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
     def flow_stats_response_handler(self, ev):
@@ -380,15 +390,6 @@ class Controller(RyuApp):
         except Exception as e:
             print(f"Error deleting queue for device: {e}")
             return False
-        
-    
-    def get_guest_list(self):
-        try:
-            payload = {"guest_list": self.guest_list}
-            requests.post("http://127.0.0.1:8000/send_guest_list", json=payload)
-        except requests.exceptions.RequestException as e:
-            print(f"Error sending guest list: {e}")
-
     
     def get_whitelist(self):
         return self.whitelist
@@ -403,19 +404,17 @@ class Controller(RyuApp):
             self.guest_list.remove(mac)
             self.whitelist.append(mac)
 
+            self.logger.info(f"GUEST LIST: {self.guest_list}")
+            self.logger.info(f"WHITELIST: {self.whitelist}")
+
             ofproto = datapath.ofproto
             parser = datapath.ofproto_parser
     
             #delete existing flow rule for this device
-            match = parser.OFPMatch(eth_src=mac, vlan_vid=(self.VLAN_GUEST_TAG | ofproto_v1_3.OFPVID_PRESENT))
-            mod = parser.OFPFlowMod(datapath=datapath, match=match, priority=20, command=ofproto.OFPFC_DELETE)
+            self.logger.info(f"Deleting existing flow rule for device {mac}")
+            match = parser.OFPMatch(eth_dst=mac)
+            mod = parser.OFPFlowMod(datapath=datapath, match=match, priority=10, command=ofproto.OFPFC_DELETE)
             datapath.send_msg(mod)
-
-            actions = [parser.OFPActionPushVlan(0x8100), parser.OFPActionSetField(vlan_vid = (self.VLAN_TRUSTED_TAG | ofproto_v1_3.OFPVID_PRESENT)),
-                       parser.OFPActionOutput(ofproto.OFPP_NORMAL)] #should this be OFPP_NORMAL or the port number?
-            
-            match = parser.OFPMatch(eth_src=mac)
-            self.__add_flow(datapath, 1, match, actions)
 
             self.logger.info(f"Device {mac} whitelisted successfully")
             return True
